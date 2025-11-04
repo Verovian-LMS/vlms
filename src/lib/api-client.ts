@@ -6,7 +6,8 @@ class ApiClient {
   private token: string | null = null;
 
   constructor(baseUrl: string = API_BASE_URL) {
-    this.baseUrl = baseUrl;
+    // Normalize base URL to avoid trailing slashes causing double slashes
+    this.baseUrl = (baseUrl || '').replace(/\/+$/, '');
     // Try to get token from localStorage
     this.token = localStorage.getItem('auth_token') || localStorage.getItem('access_token');
   }
@@ -28,7 +29,7 @@ class ApiClient {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
-    const url = `${this.baseUrl}${endpoint}`;
+    const url = `${this.baseUrl}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
     
     // Always refresh token from localStorage to avoid stale instance state
     const freshToken = this.token || localStorage.getItem('auth_token') || localStorage.getItem('access_token');

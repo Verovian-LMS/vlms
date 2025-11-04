@@ -13,7 +13,7 @@ export const createCourse = async (values: CourseFormValues) => {
       const formData = new FormData();
       formData.append('file', values.imageFile);
       
-      const API_BASE_URL = 'http://localhost:8000';
+      const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000').replace(/\/+$/, '');
       const token = localStorage.getItem('auth_token');
       const imageUploadResponse = await fetch(`${API_BASE_URL}/api/v1/files/upload/course-image`, {
         method: 'POST',
@@ -139,7 +139,7 @@ export const updateCourse = async (courseId: string, values: Partial<CourseFormV
       const formData = new FormData();
       formData.append('file', values.imageFile);
       
-      const API_BASE_URL = 'http://localhost:8000';
+      const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000').replace(/\/+$/, '');
       const token = localStorage.getItem('auth_token');
       const imageUploadResponse = await fetch(`${API_BASE_URL}/api/v1/files/upload/course-image`, {
         method: 'POST',
