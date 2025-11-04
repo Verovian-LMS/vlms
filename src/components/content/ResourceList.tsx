@@ -3,7 +3,7 @@ import React, { useState, useMemo } from 'react';
 import { FileDown, FilePlus, FileQuestion, DownloadCloud, CheckSquare, Square, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ResourceItem from './ResourceItem';
-import { LectureResource } from '@/types/course';
+import { LessonResource } from '@/types/course';
 import { cn } from '@/lib/utils';
 import {
   DropdownMenu,
@@ -15,7 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 
 interface ResourceListProps {
-  resources: LectureResource[];
+  resources: LessonResource[];
   emptyMessage?: string;
   onAddResource?: () => void;
   className?: string;
@@ -24,7 +24,7 @@ interface ResourceListProps {
 }
 
 // Extract file type from URL or actual file type
-const getFileCategory = (resource: LectureResource): string => {
+const getFileCategory = (resource: LessonResource): string => {
   const fileType = resource.fileType?.toLowerCase() || '';
   
   if (fileType.includes('pdf')) return 'PDF';
@@ -41,7 +41,7 @@ const getFileCategory = (resource: LectureResource): string => {
 
 const ResourceList: React.FC<ResourceListProps> = ({
   resources,
-  emptyMessage = "No resources available for this lecture",
+  emptyMessage = "No resources available for this lesson",
   onAddResource,
   className,
   isEditable = false,

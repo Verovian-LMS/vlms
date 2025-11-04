@@ -50,13 +50,13 @@ export function getPlaceholderImage(seed: string, width = 800, height = 600): st
   // List of good quality Unsplash image IDs we can use as placeholders
   const imageIds = [
     'photo-1488590528505-98d2b5aba04b', // Computer
-    'photo-1581091196277-9f6e9b96cc6a', // Medical
-    'photo-1576091160399-112ba8d25d1d', // Doctor
+    'photo-1581091196277-9f6e9b96cc6a', // Educational
+    'photo-1576091160399-112ba8d25d1d', // Professional
     'photo-1532938911079-1b06ac7ceec7', // Books
     'photo-1550831107-1553da8c8464', // Laboratory
     'photo-1576671414121-aa2d70260ade', // Technology
-    'photo-1551884170-09fb70a3a2ed', // Hospital
-    'photo-1587854692152-cbe660dbde88', // Medical research
+    'photo-1551884170-09fb70a3a2ed', // Campus
+    'photo-1587854692152-cbe660dbde88', // Academic research
     'photo-1505751172876-fa1923c5c528', // Education
   ];
   

@@ -13,13 +13,13 @@ interface FeatureProps {
 const features = [
   {
     icon: <Video className="w-8 h-8 text-medblue-600" />,
-    title: "High-Yield Video Lectures",
-    description: "Concise, focused videos taught by expert medical educators covering essential topics"
+    title: "High-Yield Video Lessons",
+    description: "Concise, focused videos taught by expert educators covering essential topics"
   },
   {
     icon: <Activity className="w-8 h-8 text-medteal-600" />,
     title: "Interactive Quizzes",
-    description: "Reinforce learning with case-based questions in USMLE and NCLEX formats"
+    description: "Reinforce learning with case-based questions in standardized exam formats"
   },
   {
     icon: <BookOpen className="w-8 h-8 text-medblue-600" />,
@@ -77,7 +77,7 @@ const Features = () => {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            Everything you need to succeed in your medical education journey
+            Everything you need to succeed in your educational journey
           </motion.p>
         </div>
         

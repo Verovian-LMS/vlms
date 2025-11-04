@@ -58,15 +58,15 @@ export const CourseBasicInfo: React.FC<CourseBasicInfoProps> = ({
 }) => {
   // Define course categories
   const categories = [
-    { value: "anatomy", label: "Anatomy" },
-    { value: "physiology", label: "Physiology" },
-    { value: "biochemistry", label: "Biochemistry" },
-    { value: "pathology", label: "Pathology" },
-    { value: "pharmacology", label: "Pharmacology" },
-    { value: "microbiology", label: "Microbiology" },
-    { value: "clinical-skills", label: "Clinical Skills" },
-    { value: "radiology", label: "Radiology" },
-    { value: "ethics", label: "Medical Ethics" },
+    { value: "natural-sciences", label: "Natural Sciences" },
+    { value: "applied-skills", label: "Applied Skills" },
+    { value: "life-sciences", label: "Life Sciences" },
+    { value: "mathematics", label: "Mathematics" },
+    { value: "engineering", label: "Engineering" },
+    { value: "business", label: "Business" },
+    { value: "technology", label: "Technology" },
+    { value: "social-sciences", label: "Social Sciences" },
+    { value: "arts-humanities", label: "Arts & Humanities" },
   ];
 
   // Handler for when a new file is selected
@@ -122,7 +122,7 @@ export const CourseBasicInfo: React.FC<CourseBasicInfoProps> = ({
             id="course-title"
             value={title}
             onChange={(e) => onTitleChange(e.target.value)}
-            placeholder="e.g., Introduction to Cardiovascular Physiology"
+            placeholder="e.g., Introduction to Scientific Principles"
             maxLength={100}
             className="h-11 font-exo2"
             required

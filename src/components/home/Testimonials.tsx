@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
+import { apiClient } from "@/lib/api-client";
 
 interface Testimonial {
   id: string;
@@ -26,23 +26,19 @@ const Testimonials = () => {
     const fetchTestimonials = async () => {
       try {
         setLoading(true);
-        const { data, error } = await supabase
-          .from('testimonials')
-          .select('*')
-          .order('created_at', { ascending: false });
+        try {
+          const data = await apiClient.get('/api/v1/testimonials');
           
-        if (error) {
-          throw error;
-        }
-        
-        if (data && data.length > 0) {
-          setTestimonials(data as Testimonial[]);
-        } else {
-          // If no testimonials are found, we can use placeholder data or leave empty
+          if (data && data.length > 0) {
+            setTestimonials(data as Testimonial[]);
+          } else {
+            // If no testimonials are found, we use empty array
+            setTestimonials([]);
+          }
+        } catch (error) {
+          console.error('Error fetching testimonials:', error);
           setTestimonials([]);
         }
-      } catch (error) {
-        console.error('Error fetching testimonials:', error);
       } finally {
         setLoading(false);
       }
@@ -154,7 +150,7 @@ const Testimonials = () => {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            Join thousands of medical students and professionals who've transformed their learning
+            Join thousands of students and professionals who've transformed their learning
           </motion.p>
         </div>
         

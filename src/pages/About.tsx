@@ -13,13 +13,13 @@ const teamMembers = [
     name: "Dr. Sarah Johnson",
     role: "Founder & CEO",
     image: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2",
-    bio: "Cardiologist and former medical school professor with a passion for accessible medical education."
+    bio: "Educational leader and former university professor with a passion for accessible education."
   },
   {
     name: "Dr. Michael Chang",
-    role: "Chief Medical Officer",
+    role: "Chief Academic Officer",
     image: "https://images.unsplash.com/photo-1560250097-0b93528c311a",
-    bio: "Neurologist with 15+ years of clinical experience and a focus on student-centered learning."
+    bio: "Academic professional with 15+ years of educational experience and a focus on student-centered learning."
   },
   {
     name: "Emma Rodriguez",
@@ -37,8 +37,8 @@ const teamMembers = [
 
 // Stats data
 const stats = [
-  { label: "Medical Students", value: "50,000+", icon: <Users className="h-8 w-8 text-medblue-600" /> },
-  { label: "Video Lectures", value: "2,500+", icon: <BookOpen className="h-8 w-8 text-medteal-600" /> },
+  { label: "Students", value: "50,000+", icon: <Users className="h-8 w-8 text-medblue-600" /> },
+  { label: "Video Lessons", value: "2,500+", icon: <BookOpen className="h-8 w-8 text-medteal-600" /> },
   { label: "Institutions", value: "120+", icon: <GraduationCap className="h-8 w-8 text-medblue-600" /> },
   { label: "Countries", value: "85+", icon: <Globe className="h-8 w-8 text-medteal-600" /> }
 ];
@@ -48,12 +48,12 @@ const values = [
   {
     icon: <Award className="h-8 w-8 text-medblue-600" />,
     title: "Excellence",
-    description: "We maintain the highest standards in medical education, ensuring accuracy and relevance."
+    description: "We maintain the highest standards in education, ensuring accuracy and relevance."
   },
   {
     icon: <Heart className="h-8 w-8 text-medteal-600" />,
     title: "Accessibility",
-    description: "We believe quality medical education should be accessible to students worldwide."
+    description: "We believe quality education should be accessible to students worldwide."
   },
   {
     icon: <Users className="h-8 w-8 text-medblue-600" />,
@@ -83,10 +83,10 @@ const About = () => {
                 transition={{ duration: 0.5 }}
               >
                 <h1 className="text-4xl md:text-5xl font-bold text-gray-900 leading-tight mb-6">
-                  Transforming Medical Education for the Digital Age
+                  Transforming Education for the Digital Age
                 </h1>
                 <p className="text-xl text-gray-600 mb-8">
-                  MedMaster was founded by physicians and educators with a shared mission: to make high-quality medical education accessible, engaging, and effective.
+                  EduMaster was founded by educators and technology experts with a shared mission: to make high-quality education accessible, engaging, and effective.
                 </p>
                 <div className="flex flex-wrap gap-4">
                   <Button className="bg-medblue-600 hover:bg-medblue-700" size="lg" asChild>
@@ -108,7 +108,7 @@ const About = () => {
                 <div className="relative overflow-hidden bg-white rounded-xl shadow-lg border border-gray-100">
                   <img 
                     src="https://images.unsplash.com/photo-1649972904349-6e44c42644a7" 
-                    alt="Medical students learning" 
+                    alt="Students learning" 
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -151,16 +151,16 @@ const About = () => {
                 <h3 className="text-2xl font-bold text-gray-900 mb-6">From Classroom to Global Platform</h3>
                 <div className="space-y-4 text-gray-600">
                   <p>
-                    MedMaster began in 2018 when Dr. Sarah Johnson, a cardiology professor, noticed her students struggling with complex medical concepts. She started recording video explanations that broke down difficult topics in a clear, concise way.
+                    EduMaster began in 2018 when Dr. Sarah Johnson, an education professor, noticed her students struggling with complex concepts. She started recording video explanations that broke down difficult topics in a clear, concise way.
                   </p>
                   <p>
-                    These videos quickly became popular beyond her own classroom, spreading to medical schools across the country. Recognizing the need for accessible, high-quality medical education resources, Dr. Johnson teamed up with educational technology experts to create MedMaster.
+                    These videos quickly became popular beyond her own classroom, spreading to universities across the country. Recognizing the need for accessible, high-quality educational resources, Dr. Johnson teamed up with educational technology experts to create EduMaster.
                   </p>
                   <p>
-                    What started as supplementary videos for a single medical school class has now grown into a comprehensive learning platform serving medical students, nursing students, and healthcare professionals in over 85 countries.
+                    What started as supplementary videos for a single university class has now grown into a comprehensive learning platform serving students and professionals in over 85 countries.
                   </p>
                   <p>
-                    Today, our team includes physicians across multiple specialties, instructional designers, software engineers, and learning scientists—all dedicated to our mission of transforming medical education.
+                    Today, our team includes educators across multiple disciplines, instructional designers, software engineers, and learning scientists—all dedicated to our mission of transforming education.
                   </p>
                 </div>
               </motion.div>
@@ -203,7 +203,7 @@ const About = () => {
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Our Core Values</h2>
               <div className="w-16 h-1 bg-medblue-600 mx-auto mb-8"></div>
               <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                These principles guide everything we do at MedMaster, from course development to platform design.
+                These principles guide everything we do at EduMaster, from course development to platform design.
               </p>
             </motion.div>
             
@@ -305,7 +305,7 @@ const About = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              Join Us in Transforming Medical Education
+              Join Us in Transforming Education
             </motion.h2>
             <motion.p 
               className="text-xl mb-8 text-blue-100 max-w-3xl mx-auto"
@@ -313,7 +313,7 @@ const About = () => {
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
-              Experience the MedMaster difference with our innovative learning platform.
+              Experience the EduMaster difference with our innovative learning platform.
             </motion.p>
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}

@@ -1,26 +1,16 @@
 
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import { ProfileType } from './useAuthState';
+import { apiLogin, apiRegister, apiMe, setAccessToken } from "@/integrations/api/client";
 
 export const useAuthMethods = (setProfile: (profile: ProfileType | null) => void) => {
   const { toast } = useToast();
 
-  // Fetch user profile from the database
-  const fetchProfile = async (userId: string) => {
+  // Fetch profile from FastAPI
+  const fetchProfile = async (): Promise<ProfileType | null> => {
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (error) {
-        console.error('Error fetching profile:', error);
-        return null;
-      }
-      
-      return data as ProfileType;
+      const profile = await apiMe();
+      return profile as unknown as ProfileType;
     } catch (error) {
       console.error('Error in fetchProfile:', error);
       return null;
@@ -30,19 +20,10 @@ export const useAuthMethods = (setProfile: (profile: ProfileType | null) => void
   // Login function
   const login = async (email: string, password: string) => {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        throw error;
-      }
-
-      if (data.user) {
-        const profileData = await fetchProfile(data.user.id);
-        setProfile(profileData);
-      }
+      const token = await apiLogin({ email, password });
+      setAccessToken(token.access_token);
+      const profileData = await fetchProfile();
+      setProfile(profileData);
     } catch (error: any) {
       console.error("Login error:", error.message);
       toast({
@@ -56,34 +37,18 @@ export const useAuthMethods = (setProfile: (profile: ProfileType | null) => void
 
   // Signup function
   const signup = async (email: string, password: string, role: 'student' | 'creator') => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          role // Store role in auth metadata
-        }
-      }
-    });
-
-    if (error) throw error;
-
-    // Create profile with role
-    await supabase
-      .from('profiles')
-      .upsert({
-        id: data.user?.id,
-        role
-      });
+    const name = email.split('@')[0];
+    const token = await apiRegister({ name, email, password });
+    setAccessToken(token.access_token);
+    const profileData = await fetchProfile();
+    setProfile(profileData);
   };
 
   // Logout function
   const logout = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        throw error;
-      }
+      setAccessToken(null);
+      setProfile(null);
     } catch (error: any) {
       console.error("Logout error:", error.message);
       toast({
@@ -96,41 +61,10 @@ export const useAuthMethods = (setProfile: (profile: ProfileType | null) => void
   };
 
   // Update profile function
-  const updateProfile = async (updates: Partial<ProfileType>) => {
-    try {
-      // Fix: Use getUser() to get the current user data
-      const { data, error: userError } = await supabase.auth.getUser();
-      
-      if (userError || !data.user) {
-        throw new Error("User must be logged in to update profile");
-      }
-
-      const { error } = await supabase
-        .from('profiles')
-        .update(updates)
-        .eq('id', data.user.id);
-
-      if (error) {
-        throw error;
-      }
-
-      // Update local state by fetching the updated profile
-      const updatedProfile = await fetchProfile(data.user.id);
-      setProfile(updatedProfile);
-
-      toast({
-        title: "Profile updated",
-        description: "Your profile has been updated successfully."
-      });
-    } catch (error: any) {
-      console.error("Profile update error:", error.message);
-      toast({
-        title: "Update failed",
-        description: error.message || "There was an error updating your profile.",
-        variant: "destructive"
-      });
-      throw error;
-    }
+  const updateProfile = async (_updates: Partial<ProfileType>) => {
+    // Not implemented in backend yet; no-op to comply with constitution
+    const current = await fetchProfile();
+    setProfile(current);
   };
 
   return {

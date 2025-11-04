@@ -176,11 +176,11 @@ const VideoControls: React.FC<VideoControlsProps> = ({
         </div>
       </div>
 
-      {/* Play/Pause Overlay */}
+      {/* Play/Pause Overlay - allow controls to remain clickable when paused */}
       {!isPlaying && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+        <div className="absolute inset-0 flex items-center justify-center bg-black/20 pointer-events-none">
           <button 
-            className="w-16 h-16 rounded-full bg-white/20 text-white hover:bg-white/30 hover:scale-110 transition-all flex items-center justify-center"
+            className="w-16 h-16 rounded-full bg-white/20 text-white hover:bg-white/30 hover:scale-110 transition-all flex items-center justify-center pointer-events-auto"
             onClick={onPlayPause}
           >
             <Play className="w-8 h-8" />

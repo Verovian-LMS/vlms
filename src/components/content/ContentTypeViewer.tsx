@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { LectureContentType } from '@/types/course';
+import { LessonContentType } from '@/types/course';
 import VideoPlayer from '@/components/video/VideoPlayer';
 import PDFViewer from '@/components/content/PDFViewer';
 import SlidesViewer from '@/components/content/SlidesViewer';
@@ -10,10 +10,12 @@ import InteractiveContent from '@/components/content/InteractiveContent';
 import ResourceList from '@/components/content/ResourceList';
 import { AlertTriangle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 
 interface ContentTypeViewerProps {
-  contentType?: LectureContentType;
-  lecture: {
+  contentType?: LessonContentType;
+  lesson: {
     id: string;
     title?: string;
     videoUrl?: string | null;
@@ -34,23 +36,31 @@ interface ContentTypeViewerProps {
     }>;
   };
   onProgressUpdate: (currentTime: number, duration: number) => void;
+  isAuthor?: boolean;
+  editCourseId?: string;
+  updateOnSeek?: boolean;
+  markCompleteOnLoad?: boolean;
 }
 
 const ContentTypeViewer: React.FC<ContentTypeViewerProps> = ({
   contentType = 'video',
-  lecture,
-  onProgressUpdate
+  lesson,
+  onProgressUpdate,
+  isAuthor = false,
+  editCourseId,
+  updateOnSeek,
+  markCompleteOnLoad
 }) => {
   // Helper function to determine content source based on type
   const getContentSource = () => {
     switch (contentType) {
-      case 'video': return lecture.videoUrl;
-      case 'pdf': return lecture.pdfUrl;
-      case 'slides': return lecture.slidesUrl;
-      case 'audio': return lecture.audioUrl;
-      case 'document': return lecture.documentUrl;
-      case 'interactive': return lecture.interactiveUrl;
-      case 'downloadable': return lecture.downloadableUrl;
+      case 'video': return lesson.videoUrl;
+      case 'pdf': return lesson.pdfUrl;
+      case 'slides': return lesson.slidesUrl;
+      case 'audio': return lesson.audioUrl;
+      case 'document': return lesson.documentUrl;
+      case 'interactive': return lesson.interactiveUrl;
+      case 'downloadable': return lesson.downloadableUrl;
       default: return null;
     }
   };
@@ -60,11 +70,27 @@ const ContentTypeViewer: React.FC<ContentTypeViewerProps> = ({
   // If no content source is available, show an alert
   if (!contentSource) {
     return (
-      <Alert variant="destructive" className="mb-4">
+      <Alert variant={isAuthor ? 'default' : 'destructive'} className="mb-4">
         <AlertTriangle className="h-4 w-4" />
-        <AlertTitle>Content Not Available</AlertTitle>
+        <AlertTitle>{isAuthor ? 'No Content Attached' : 'Content Not Available'}</AlertTitle>
         <AlertDescription>
-          The {contentType} content for this lecture is not available. Please contact the instructor.
+          {isAuthor ? (
+            <div className="space-y-2">
+              <p>
+                There is no source URL set for the {contentType} content in this lesson.
+                Attach a file or set a URL in the course editor.
+              </p>
+              <div>
+                <Button variant="outline" size="sm" asChild>
+                  <Link to={editCourseId ? `/course-editor/${editCourseId}` : '/course-upload'}>
+                    Edit Course Content
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <>The {contentType} content for this lesson is not available. Please contact the instructor.</>
+          )}
         </AlertDescription>
       </Alert>
     );
@@ -76,7 +102,8 @@ const ContentTypeViewer: React.FC<ContentTypeViewerProps> = ({
       return (
         <VideoPlayer 
           src={contentSource} 
-          title={lecture.title || "Video"} 
+          title={lesson.title || "Video"} 
+          updateOnSeek={updateOnSeek}
           onProgressUpdate={onProgressUpdate}
         />
       );
@@ -85,7 +112,9 @@ const ContentTypeViewer: React.FC<ContentTypeViewerProps> = ({
       return (
         <PDFViewer 
           src={contentSource} 
-          title={lecture.title || "PDF Document"} 
+          title={lesson.title || "PDF Document"} 
+          onProgressUpdate={onProgressUpdate}
+          markCompleteOnLoad={markCompleteOnLoad}
         />
       );
       
@@ -93,7 +122,7 @@ const ContentTypeViewer: React.FC<ContentTypeViewerProps> = ({
       return (
         <SlidesViewer 
           src={contentSource} 
-          title={lecture.title || "Presentation Slides"} 
+          title={lesson.title || "Presentation Slides"} 
         />
       );
       
@@ -101,7 +130,7 @@ const ContentTypeViewer: React.FC<ContentTypeViewerProps> = ({
       return (
         <AudioPlayer 
           src={contentSource} 
-          title={lecture.title || "Audio"} 
+          title={lesson.title || "Audio"} 
         />
       );
       
@@ -109,7 +138,7 @@ const ContentTypeViewer: React.FC<ContentTypeViewerProps> = ({
       return (
         <DocumentViewer 
           src={contentSource} 
-          title={lecture.title || "Document"} 
+          title={lesson.title || "Document"} 
         />
       );
       
@@ -117,8 +146,8 @@ const ContentTypeViewer: React.FC<ContentTypeViewerProps> = ({
       return (
         <InteractiveContent 
           src={contentSource} 
-          lectureId={lecture.id}
-          title={lecture.title || "Interactive Content"} 
+          lessonId={lesson.id}
+          title={lesson.title || "Interactive Content"} 
         />
       );
       
@@ -126,13 +155,13 @@ const ContentTypeViewer: React.FC<ContentTypeViewerProps> = ({
       return (
         <div className="space-y-4">
           <h3 className="text-lg font-medium">Downloadable Resources</h3>
-          {lecture.resources && lecture.resources.length > 0 ? (
+          {lesson.resources && lesson.resources.length > 0 ? (
             <ResourceList 
-              resources={lecture.resources}
+              resources={lesson.resources}
               allowBatchDownload={true}
             />
           ) : (
-            <p className="text-slate-500">No downloadable resources available for this lecture.</p>
+            <p className="text-slate-500">No downloadable resources available for this lesson.</p>
           )}
         </div>
       );

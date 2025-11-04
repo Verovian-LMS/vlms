@@ -22,9 +22,9 @@ const Settings = () => {
   const profileForm = useForm({
     defaultValues: {
       name: "Dr. Sarah Johnson",
-      bio: "Cardiologist with 10+ years of experience in teaching medical students. Passionate about innovative educational methods.",
+      bio: "Educator with 10+ years of experience in teaching students. Passionate about innovative educational methods.",
       email: "sarah.johnson@example.com",
-      institution: "University Medical Center",
+      institution: "University Learning Center",
       specialization: "Cardiology",
       website: "https://sarahjohnson.example.com"
     }
@@ -184,7 +184,7 @@ const Settings = () => {
                                 name="institution"
                                 render={({ field }) => (
                                   <FormItem>
-                                    <FormLabel>Institution/Hospital</FormLabel>
+                                    <FormLabel>Institution/Organization</FormLabel>
                                     <FormControl>
                                       <Input {...field} />
                                     </FormControl>

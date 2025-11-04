@@ -40,7 +40,7 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
           <AvatarFallback>{profile?.name?.substring(0, 2) || "UN"}</AvatarFallback>
         </Avatar>
         <h3 className="font-bold text-lg">{profile?.name || "User"}</h3>
-        <p className="text-sm text-gray-500">{profile?.role || "Medical Student"}</p>
+        <p className="text-sm text-gray-500">{profile?.role || "Student"}</p>
       </div>
       <Separator />
       <nav className="p-4">

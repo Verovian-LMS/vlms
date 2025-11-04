@@ -13,6 +13,7 @@ interface VideoPlayerProps {
   captions?: { src: string; label: string; language: string }[];
   qualities?: { label: string; src: string; quality: string }[];
   onProgressUpdate?: (currentTime: number, duration: number) => void;
+  updateOnSeek?: boolean;
 }
 
 const VideoPlayer: React.FC<VideoPlayerProps> = ({
@@ -21,8 +22,52 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   poster,
   captions,
   qualities,
-  onProgressUpdate
+  onProgressUpdate,
+  updateOnSeek
 }) => {
+  // Backend base URL used to rewrite relative media URLs to absolute
+  const API_BASE_URL = 'http://localhost:8000';
+
+  const ensureAbsoluteUrl = (url?: string): string | undefined => {
+    if (!url) return undefined;
+    try {
+      // Already absolute
+      if (/^https?:\/\//i.test(url)) return url;
+      // Normalize by prefixing backend origin
+      return `${API_BASE_URL}${url.startsWith('/') ? url : `/${url}`}`;
+    } catch {
+      return url;
+    }
+  };
+
+  const inferVideoMimeType = (url?: string): string => {
+    if (!url) return 'video/mp4';
+    try {
+      const clean = url.split('?')[0].split('#')[0];
+      const ext = clean.substring(clean.lastIndexOf('.') + 1).toLowerCase();
+      switch (ext) {
+        case 'mp4':
+        case 'm4v':
+          return 'video/mp4';
+        case 'webm':
+          return 'video/webm';
+        case 'mov':
+          return 'video/quicktime';
+        case 'avi':
+          return 'video/x-msvideo';
+        case 'ogg':
+        case 'ogv':
+          return 'video/ogg';
+        default:
+          return 'video/mp4';
+      }
+    } catch {
+      return 'video/mp4';
+    }
+  };
+
+  const effectiveSrc = ensureAbsoluteUrl(src);
+  const sourceType = inferVideoMimeType(src);
   // Remove default sample video
   const [videoAnalytics, setVideoAnalytics] = useState({
     started: false,
@@ -62,7 +107,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     changePlaybackSpeed,
     toggleCaptions,
     changeVideoQuality
-  } = useVideoPlayer({ onProgressUpdate });
+  } = useVideoPlayer({ onProgressUpdate, updateOnSeek });
 
   // Initialize quality options
   useEffect(() => {
@@ -71,10 +116,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     } else if (src) {
       // If no qualities provided but we have a source, set it as default
       setQualitySources([
-        { label: "Auto", src: src, quality: "auto" }
+        { label: "Auto", src: effectiveSrc || src, quality: "auto" }
       ]);
     }
-  }, [qualities, src, setQualitySources]);
+  }, [qualities, src, effectiveSrc, setQualitySources]);
 
   // Track analytics
   useEffect(() => {
@@ -157,7 +202,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   }, [addBookmark]);
   
   // Show message if no video source is provided
-  if (!src) {
+  if (!effectiveSrc) {
     return (
       <div 
         className="relative bg-black rounded-xl overflow-hidden aspect-video shadow-lg flex items-center justify-center"
@@ -165,7 +210,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         <div className="text-center text-white p-6">
           <Play className="w-16 h-16 mx-auto mb-4 opacity-20" />
           <h3 className="text-xl font-medium">No video available</h3>
-          <p className="text-sm text-gray-400 mt-2">This lecture doesn't have a video resource</p>
+          <p className="text-sm text-gray-400 mt-2">This lesson doesn't have a video resource</p>
         </div>
       </div>
     );
@@ -185,7 +230,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
       >
-        {src && <source src={src} type="video/mp4" />}
+        {effectiveSrc && <source src={effectiveSrc} type={sourceType} />}
         
         {/* Add caption tracks if available */}
         {captions && captions.map((caption, index) => (

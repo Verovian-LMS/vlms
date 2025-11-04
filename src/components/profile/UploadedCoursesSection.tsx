@@ -4,8 +4,8 @@ import { Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/context/AuthContext";
+import { apiClient } from "@/lib/api/client";
+import { useAuth } from "@/context/FastApiAuthContext";
 import { BookOpen, FilePlus, Upload, Eye, Edit, Trash2 } from "lucide-react";
 
 const UploadedCoursesSection = () => {
@@ -17,19 +17,15 @@ const UploadedCoursesSection = () => {
   useEffect(() => {
     const fetchCourses = async () => {
       if (!user) return;
-      
+
       try {
-        const { data, error } = await supabase
-          .from('courses')
-          .select('*')
-          .eq('author_id', user.id);
-        
-        if (error) {
-          console.error('Error fetching courses:', error);
-          return;
-        }
-        
-        setUploadedCourses(data || []);
+        // Fetch all courses and filter by current user as author
+        const response = await apiClient.getCourses();
+        const allCourses = response.data || [];
+        const authored = allCourses.filter((course: any) => {
+          return course.author?.id === user.id || course.author_id === user.id;
+        });
+        setUploadedCourses(authored);
       } catch (error) {
         console.error('Error in fetchCourses:', error);
       } finally {
@@ -42,18 +38,13 @@ const UploadedCoursesSection = () => {
 
   const handleDelete = async (courseId: string) => {
     try {
-      const { error } = await supabase
-        .from('courses')
-        .delete()
-        .eq('id', courseId);
-      
+      const { error } = await apiClient.deleteCourse(courseId);
       if (error) {
-        throw error;
+        throw new Error(error);
       }
-      
-      // Update local state
+
       setUploadedCourses(uploadedCourses.filter((course: any) => course.id !== courseId));
-      
+
       toast({
         title: "Course deleted",
         description: "The course has been successfully deleted.",
@@ -70,23 +61,18 @@ const UploadedCoursesSection = () => {
   
   const handleStatusChange = async (courseId: string, newStatus: string) => {
     try {
-      const { error } = await supabase
-        .from('courses')
-        .update({ status: newStatus, updated_at: new Date().toISOString() })
-        .eq('id', courseId);
-      
+      const { error } = await apiClient.updateCourse(courseId, { status: newStatus, updated_at: new Date().toISOString() });
       if (error) {
-        throw error;
+        throw new Error(error);
       }
-      
-      // Update local state
+
       setUploadedCourses(uploadedCourses.map((course: any) => {
         if (course.id === courseId) {
           return { ...course, status: newStatus };
         }
         return course;
       }));
-      
+
       toast({
         title: "Course status updated",
         description: `The course status has been changed to ${newStatus}.`,
@@ -195,8 +181,8 @@ const UploadedCoursesSection = () => {
                               <p className="font-medium">{course.modules || 0}</p>
                             </div>
                             <div>
-                              <p className="text-xs text-gray-500">Lectures</p>
-                              <p className="font-medium">{course.lectures || 0}</p>
+                              <p className="text-xs text-gray-500">Lessons</p>
+                              <p className="font-medium">{course.lessons ?? 0}</p>
                             </div>
                           </div>
                           
@@ -207,7 +193,7 @@ const UploadedCoursesSection = () => {
                                 View
                               </Button>
                             </Link>
-                            <Link to={`/course-upload?edit=${course.id}`}>
+                            <Link to={`/course-editor/${course.id}`}>
                               <Button variant="outline" size="sm">
                                 <Edit className="mr-2 h-4 w-4" />
                                 Edit

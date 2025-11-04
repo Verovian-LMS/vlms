@@ -4,8 +4,8 @@ import { motion } from 'framer-motion';
 import { Plus, X, ChevronUp, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import LectureItem from './LectureItem';
-import type { CourseModule, LectureUpload } from '@/types/course';
+import LessonItem from './LessonItem';
+import type { CourseModule, LessonUpload } from '@/types/course';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from '@/components/ui/textarea';
@@ -15,13 +15,13 @@ interface ModuleItemProps {
   moduleIndex: number; 
   updateModuleTitle: (moduleId: string, title: string) => void;
   removeModule: (moduleId: string) => void;
-  updateLecture: (moduleId: string, lectureId: string, field: string, value: any) => void;
-  addLecture: (moduleId: string) => void;
-  removeLecture: (moduleId: string, lectureId: string) => void;
+  updateLesson: (moduleId: string, lessonId: string, field: string, value: any) => void;
+  addLesson: (moduleId: string) => void;
+  removeLesson: (moduleId: string, lessonId: string) => void;
   canRemoveModule: boolean;
   isExpanded: boolean;
   toggleExpanded: () => void;
-  handleVideoUpload: (e: React.ChangeEvent<HTMLInputElement>, moduleId: string, lectureId: string) => void;
+  handleVideoUpload: (e: React.ChangeEvent<HTMLInputElement>, moduleId: string, lessonId: string) => void;
   uploadProgress: Record<string, number>;
   isUploading: Record<string, boolean>;
 }
@@ -31,9 +31,9 @@ const ModuleItem: React.FC<ModuleItemProps> = ({
   moduleIndex,
   updateModuleTitle,
   removeModule,
-  updateLecture,
-  addLecture,
-  removeLecture,
+  updateLesson,
+  addLesson,
+  removeLesson,
   canRemoveModule,
   isExpanded,
   toggleExpanded,
@@ -114,20 +114,20 @@ const ModuleItem: React.FC<ModuleItemProps> = ({
     }
   };
 
-  const handleAddLecture = () => {
+  const handleAddLesson = () => {
     try {
-      addLecture(module.id);
+      addLesson(module.id);
     } catch (error) {
-      console.error("Error adding lecture:", error);
+      console.error("Error adding lesson:", error);
       toast({
         title: "Error",
-        description: "Failed to add lecture. Please try again.",
+        description: "Failed to add lesson. Please try again.",
         variant: "destructive",
       });
     }
   };
 
-  const safeLectures = module.lectures || [];
+  const safeLessons = module.lessons || [];
 
   return (
     <motion.div 
@@ -189,30 +189,30 @@ const ModuleItem: React.FC<ModuleItemProps> = ({
           </div>
           
           <div className="space-y-4">
-            {safeLectures.length > 0 ? (
-              safeLectures.map((lecture, index) => (
-                <ErrorBoundary key={lecture.id}>
-                  <LectureItem
-                    lecture={lecture}
+            {safeLessons.length > 0 ? (
+              safeLessons.map((lesson, index) => (
+                <ErrorBoundary key={lesson.id}>
+                  <LessonItem
+                    lesson={lesson}
                     index={index}
                     moduleId={module.id}
-                    updateLecture={(field: string, value: any) => {
-                      console.log(`Updating lecture field '${field}' to:`, value);
-                      updateLecture(module.id, lecture.id, field, value);
+                    updateLesson={(field: string, value: any) => {
+                      console.log(`Updating lesson field '${field}' to:`, value);
+                      updateLesson(module.id, lesson.id, field, value);
                     }}
-                    removeLecture={() => removeLecture(module.id, lecture.id)}
-                    canRemove={safeLectures.length > 1}
+                    removeLesson={() => removeLesson(module.id, lesson.id)}
+                    canRemove={safeLessons.length > 1}
                     handleVideoUpload={(e: React.ChangeEvent<HTMLInputElement>) => 
-                      handleVideoUpload(e, module.id, lecture.id)
+                      handleVideoUpload(e, module.id, lesson.id)
                     }
-                    uploadProgress={uploadProgress[lecture.id] || 0}
-                    isUploading={!!isUploading[lecture.id]}
+                    uploadProgress={uploadProgress[lesson.id] || 0}
+                    isUploading={!!isUploading[lesson.id]}
                   />
                 </ErrorBoundary>
               ))
             ) : (
               <div className="p-4 border border-dashed border-slate-300 rounded-md">
-                <p className="text-center text-slate-500">No lectures yet. Add your first lecture below.</p>
+                <p className="text-center text-slate-500">No lessons yet. Add your first lesson below.</p>
               </div>
             )}
 
@@ -220,10 +220,10 @@ const ModuleItem: React.FC<ModuleItemProps> = ({
               <Button 
                 variant="outline" 
                 size="sm" 
-                onClick={handleAddLecture}
+                onClick={handleAddLesson}
                 className="w-full max-w-md mx-auto border-dashed border-slate-300 text-slate-600 hover:border-primary hover:text-primary"
               >
-                <Plus className="w-4 h-4 mr-2" /> Add Lecture
+                <Plus className="w-4 h-4 mr-2" /> Add Lesson
               </Button>
             </div>
           </div>

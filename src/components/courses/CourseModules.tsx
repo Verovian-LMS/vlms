@@ -5,8 +5,8 @@ import ModulesList from './modules/ModulesList';
 import ModuleActions from './modules/ModuleActions';
 import { AlertCircle } from 'lucide-react';
 import { useVideoUpload } from '@/hooks/use-video-upload';
-import { CourseModule, LectureContentType } from '@/types/course';
-import { createNewModule, createNewLecture, validateModules } from './modules/ModuleUtils';
+import { CourseModule } from '@/types/course';
+import { createNewModule, createNewLesson, validateModules } from './modules/ModuleUtils';
 
 interface CourseModulesProps {
   modules: CourseModule[];
@@ -31,10 +31,10 @@ export const CourseModules: React.FC<CourseModulesProps> = ({
   const [expandedModules, setExpandedModules] = useState<Record<string, boolean>>({});
   const [uploadingVideo, setUploadingVideo] = useState<Record<string, boolean>>({});
   
-  // Update lecture data within a module
-  const updateLecture = useCallback((
+  // Update lesson data within a module
+  const updateLesson = useCallback((
     moduleId: string,
-    lectureId: string,
+    lessonId: string,
     field: string,
     value: any
   ) => {
@@ -42,8 +42,8 @@ export const CourseModules: React.FC<CourseModulesProps> = ({
       if (module.id === moduleId) {
         return {
           ...module,
-          lectures: module.lectures.map(lecture =>
-            lecture.id === lectureId ? { ...lecture, [field]: value } : lecture
+          lessons: module.lessons.map(lesson =>
+            lesson.id === lessonId ? { ...lesson, [field]: value } : lesson
           )
         };
       }
@@ -67,17 +67,17 @@ export const CourseModules: React.FC<CourseModulesProps> = ({
     setExpandedModules(prev => ({ ...prev, [newModule.id]: true }));
   }, [modules, onModulesChange]);
 
-  const addLecture = useCallback((moduleId: string) => {
-    const newLecture = createNewLecture();
+  const addLesson = useCallback((moduleId: string) => {
+    const newLesson = createNewLesson();
     onModulesChange(modules.map(m =>
-      m.id === moduleId ? { ...m, lectures: [...m.lectures, newLecture] } : m
+      m.id === moduleId ? { ...m, lessons: [...m.lessons, newLesson] } : m
     ));
   }, [modules, onModulesChange]);
 
-  const removeLecture = useCallback((moduleId: string, lectureId: string) => {
+  const removeLesson = useCallback((moduleId: string, lessonId: string) => {
     onModulesChange(modules.map(m => {
       if (m.id === moduleId) {
-        return { ...m, lectures: m.lectures.filter(l => l.id !== lectureId) };
+        return { ...m, lessons: m.lessons.filter(l => l.id !== lessonId) };
       }
       return m;
     }));
@@ -90,9 +90,9 @@ export const CourseModules: React.FC<CourseModulesProps> = ({
       transition={{ duration: 0.5 }}
       className="bg-white p-6 sm:p-8 rounded-xl shadow-sm border border-slate-200 space-y-6"
     >
-      <h2 className="text-xl font-bold font-nunito-sans mb-4">Course Modules & Lectures</h2>
+      <h2 className="text-xl font-bold font-nunito-sans mb-4">Course Modules & Lessons</h2>
       <p className="text-sm text-slate-600 mb-6">
-        Organize your course content into modules and lectures. Upload videos for each lecture.
+        Organize your course content into modules and lessons. Upload videos for each lesson.
       </p>
 
       {!storageReady && (
@@ -119,9 +119,9 @@ export const CourseModules: React.FC<CourseModulesProps> = ({
         uploadStatuses={uploadStatuses}
         updateModuleTitle={updateModuleTitle}
         removeModule={removeModule}
-        updateLecture={updateLecture}
-        addLecture={addLecture}
-        removeLecture={removeLecture}
+        updateLesson={updateLesson}
+        addLesson={addLesson}
+        removeLesson={removeLesson}
         uploadVideo={uploadVideo}
         addModule={addModule}
       />

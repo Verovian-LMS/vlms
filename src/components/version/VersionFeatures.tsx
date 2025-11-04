@@ -33,10 +33,10 @@ const VersionFeatures = () => {
   
   const features = [
     {
-      title: "Virtual Patient Encounters",
-      description: "Interactive clinical decision-making exercises with realistic patient scenarios",
+      title: "Virtual Case Studies",
+      description: "Hands-on learning exercises with realistic scenarios and case studies",
       icon: <HeartPulse className="h-8 w-8 text-rose-500" />,
-      link: "/virtual-patient",
+      link: "/simulations",
       badgeText: "New",
       badgeVariant: "default"
     },
@@ -50,7 +50,7 @@ const VersionFeatures = () => {
     },
     {
       title: "Global Community",
-      description: "International forum for medical professionals to discuss and collaborate",
+      description: "International forum for students and professionals to discuss and collaborate",
       icon: <UsersRound className="h-8 w-8 text-blue-500" />,
       link: "/community-forum",
       badgeText: "New",
@@ -58,17 +58,17 @@ const VersionFeatures = () => {
     },
     {
       title: "Research Portal",
-      description: "Access to latest medical literature and studies with advanced filtering",
+      description: "Access to latest academic literature and studies with advanced filtering",
       icon: <BookCopy className="h-8 w-8 text-emerald-500" />,
       link: "/research-portal",
       badgeText: "New",
       badgeVariant: "default"
     },
     {
-      title: "EMR Integration",
-      description: "Seamless connection with electronic medical record systems for practical application",
+      title: "Data Integration",
+      description: "Seamless connection with learning management systems for practical application",
       icon: <FileSpreadsheet className="h-8 w-8 text-amber-500" />,
-      link: "/ehr-integration",
+      link: "/integrations",
       badgeText: "New",
       badgeVariant: "default"
     }
@@ -93,7 +93,7 @@ const VersionFeatures = () => {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            Our latest platform update introduces powerful new tools to enhance your medical education experience
+            Our latest platform update introduces powerful new tools to enhance your educational experience
           </motion.p>
         </div>
         
@@ -151,10 +151,10 @@ const VersionFeatures = () => {
 
 function getBenefitText(title: string, index: number): string {
   const benefits = {
-    "Virtual Patient Encounters": [
-      "Develop clinical reasoning and decision-making skills",
-      "Practice in a safe environment without patient risk",
-      "Receive immediate feedback on diagnostic choices"
+    "Virtual Case Studies": [
+      "Develop critical thinking and decision-making skills",
+      "Practice in a safe environment without real-world risk",
+      "Receive immediate feedback on analytical choices"
     ],
     "AI-Powered Tutoring": [
       "Personalized learning adapted to your knowledge gaps",
@@ -162,19 +162,19 @@ function getBenefitText(title: string, index: number): string {
       "Tracks progress and suggests focused study areas"
     ],
     "Global Community": [
-      "Connect with medical professionals worldwide",
-      "Discuss cases and share knowledge internationally",
+      "Connect with educational professionals worldwide",
+      "Discuss topics and share knowledge internationally",
       "Collaborate on research and educational projects"
     ],
     "Research Portal": [
-      "Search and filter the latest medical literature",
+      "Search and filter the latest academic literature",
       "Stay updated on cutting-edge research in your field",
       "Save and organize studies for future reference"
     ],
-    "EMR Integration": [
-      "Practice with realistic patient data securely",
-      "Develop documentation and clinical workflow skills",
-      "Learn how to navigate electronic health records"
+    "Data Integration": [
+      "Practice with realistic datasets securely",
+      "Develop analysis and workflow skills",
+      "Learn how to navigate information systems"
     ]
   };
   

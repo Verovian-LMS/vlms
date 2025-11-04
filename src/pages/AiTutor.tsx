@@ -19,7 +19,7 @@ const AiTutor = () => {
   const [conversation, setConversation] = useState<{role: "user" | "assistant", content: string, timestamp: Date}[]>([
     {
       role: "assistant",
-      content: "Hi there! I'm your AI medical tutor. How can I help you with your studies today?",
+      content: "Hi there! I'm your AI tutor. How can I help you with your studies today?",
       timestamp: new Date()
     }
   ]);
@@ -74,7 +74,7 @@ const AiTutor = () => {
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl md:text-4xl font-bold mb-2">AI-Powered Tutoring</h1>
-          <p className="text-muted-foreground">Personalized learning assistance for medical education</p>
+          <p className="text-muted-foreground">Personalized learning assistance for education</p>
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -85,7 +85,7 @@ const AiTutor = () => {
                   <Brain className="mr-2 h-5 w-5 text-medblue-600" />
                   AI Tutor Conversation
                 </CardTitle>
-                <CardDescription>Ask questions about medical topics, case studies, or exam preparation</CardDescription>
+                <CardDescription>Ask questions about topics, case studies, or exam preparation</CardDescription>
               </CardHeader>
               <CardContent className="flex-grow overflow-hidden p-0">
                 <ScrollArea className="h-full p-4">
@@ -145,7 +145,7 @@ const AiTutor = () => {
               <CardFooter className="pt-4">
                 <div className="flex w-full items-center space-x-2">
                   <Input 
-                    placeholder="Type your question about medical topics..." 
+                    placeholder="Type your question about topics..." 
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     onKeyDown={handleKeyDown}
@@ -255,12 +255,12 @@ const AiTutor = () => {
                     onClick={() => {
                       toast({
                         title: "Study Session Started",
-                        description: "Neuroanatomy basics session has been started",
+                        description: "Science basics session has been started",
                       });
                     }}
                   >
                     <BookOpen className="mr-2 h-4 w-4" />
-                    Neuroanatomy Basics
+                    Science Basics
                   </Button>
                   <Button 
                     variant="outline" 
@@ -268,12 +268,12 @@ const AiTutor = () => {
                     onClick={() => {
                       toast({
                         title: "Study Session Started",
-                        description: "Pharmacology review session has been started",
+                        description: "Research methods review session has been started",
                       });
                     }}
                   >
                     <BookOpen className="mr-2 h-4 w-4" />
-                    Pharmacology Review
+                    Research Methods Review
                   </Button>
                 </div>
               </CardContent>

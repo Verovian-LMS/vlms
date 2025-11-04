@@ -3,8 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/context/AuthContext";
+import { apiClient } from "@/lib/api/client";
+import { useAuth } from "@/context/FastApiAuthContext";
 import { BookOpen } from "lucide-react";
 
 const CoursesSection = () => {
@@ -15,24 +15,56 @@ const CoursesSection = () => {
   useEffect(() => {
     const fetchEnrollments = async () => {
       if (!user) return;
-      
+
       try {
-        const { data, error } = await supabase
-          .from('enrollments')
-          .select(`
-            id,
-            progress,
-            created_at,
-            courses(id, title, description, image_url, status, author_id, profiles(name))
-          `)
-          .eq('user_id', user.id);
-        
-        if (error) {
-          console.error('Error fetching enrollments:', error);
-          return;
-        }
-        
-        setEnrollments(data || []);
+        const response = await apiClient.get<any[]>(`/api/v1/courses/my-courses`);
+        const courses = response.data || [];
+
+        const mapped = await Promise.all(courses.map(async (course: any) => {
+          try {
+            const progressResponse = await apiClient.getCourseProgress(course.id);
+            const progress = progressResponse.data?.progress ?? 0;
+            const completed_lessons = progressResponse.data?.completed_lessons ?? 0;
+            const total_lessons = progressResponse.data?.total_lessons ?? 0;
+
+            return {
+              id: `${user.id}-${course.id}`,
+              progress,
+              created_at: course.created_at,
+              courses: {
+                id: course.id,
+                title: course.title,
+                description: course.description,
+                image_url: course.image_url,
+                status: course.status,
+                author_id: course.author?.id || course.author_id,
+                profiles: course.author ? { name: course.author.name } : undefined,
+              },
+              completed_lessons,
+              total_lessons,
+            };
+          } catch (err) {
+            console.error('Error fetching course progress:', err);
+            return {
+              id: `${user.id}-${course.id}`,
+              progress: 0,
+              created_at: course.created_at,
+              courses: {
+                id: course.id,
+                title: course.title,
+                description: course.description,
+                image_url: course.image_url,
+                status: course.status,
+                author_id: course.author?.id || course.author_id,
+                profiles: course.author ? { name: course.author.name } : undefined,
+              },
+              completed_lessons: 0,
+              total_lessons: 0,
+            };
+          }
+        }));
+
+        setEnrollments(mapped);
       } catch (error) {
         console.error('Error in fetchEnrollments:', error);
       } finally {

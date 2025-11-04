@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { apiClient } from "@/lib/api-client";
 
 interface CourseCategory {
   id: string;
@@ -20,7 +20,7 @@ interface CourseCategoryCardProps {
 
 const CourseCard = ({ category, delay = 0 }: CourseCategoryCardProps) => (
   <motion.div 
-    className="card-medical card-hover group"
+    className="card-educational card-hover group"
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.5, delay: delay }}
@@ -50,66 +50,64 @@ const CourseCategories = () => {
   const [categories, setCategories] = useState<CourseCategory[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const useDefaultCategories = () => {
+    setCategories([
+      {
+        id: "1",
+        name: "Natural Sciences",
+        description: "Deep dive into physics, chemistry, and biology",
+        image: 'https://images.unsplash.com/photo-1581093196277-9f6e9b96cc6a?auto=format&fit=crop&w=500&h=300&q=80',
+        slug: "/courses/category/natural-sciences",
+      },
+      {
+        id: "2",
+        name: "Applied Skills",
+        description: "Learn essential practical techniques and applications",
+        image: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=500&h=300&q=80',
+        slug: "/courses/category/applied-skills",
+      },
+      {
+        id: "3",
+        name: "Professional Certification",
+        description: "Prepare for licensing exams and professional certifications",
+        image: 'https://images.unsplash.com/photo-1550831107-1553da8c8464?auto=format&fit=crop&w=500&h=300&q=80',
+        slug: "/courses/category/professional-certification",
+      },
+      {
+        id: "4",
+        name: "Technology & Innovation",
+        description: "Discover the latest advances in technology and innovation",
+        image: 'https://images.unsplash.com/photo-1576671414121-aa2d70260ade?auto=format&fit=crop&w=500&h=300&q=80',
+        slug: "/courses/category/technology-innovation",
+      },
+    ]);
+  };
+
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         setLoading(true);
-        // Fetch categories from database if available
-        const { data, error } = await supabase
-          .from('categories')
-          .select('*')
-          .order('name');
-          
-        if (error) {
-          console.error('Error fetching categories:', error);
-          throw error;
-        }
+        // Fetch categories from FastAPI backend
+        const data = await apiClient.get('/api/v1/categories');
         
         if (data && data.length > 0) {
-          // Map database records to our expected format
-          const formattedCategories: CourseCategory[] = data.map(cat => ({
-            id: cat.category_id.toString(),
+          // Map API response to our expected format
+          const formattedCategories = data.map((cat: any) => ({
+            id: cat.category_id,
             name: cat.name,
-            description: cat.description || 'Explore our collection of courses in this category',
-            image: '', // You would need to add an image column to the categories table
+            count: cat.course_count || 0,
+            image: cat.image || '', 
             slug: `/courses/category/${cat.category_id}`,
           }));
           setCategories(formattedCategories);
         } else {
-          // Fallback to default categories if none in database
-          setCategories([
-            {
-              id: "1",
-              name: "Medical Sciences",
-              description: "Deep dive into anatomy, physiology, and pathology",
-              image: 'https://images.unsplash.com/photo-1581093196277-9f6e9b96cc6a?auto=format&fit=crop&w=500&h=300&q=80',
-              slug: "/courses/category/medical-sciences",
-            },
-            {
-              id: "2",
-              name: "Clinical Skills",
-              description: "Learn essential clinical techniques and patient care",
-              image: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=500&h=300&q=80',
-              slug: "/courses/category/clinical-skills",
-            },
-            {
-              id: "3",
-              name: "Medical Licensing Exams",
-              description: "Prepare for USMLE, NCLEX and other licensing exams",
-              image: 'https://images.unsplash.com/photo-1550831107-1553da8c8464?auto=format&fit=crop&w=500&h=300&q=80',
-              slug: "/courses/category/licensing-exams",
-            },
-            {
-              id: "4",
-              name: "Medical Technology",
-              description: "Discover the latest advances in medical technology",
-              image: 'https://images.unsplash.com/photo-1576671414121-aa2d70260ade?auto=format&fit=crop&w=500&h=300&q=80',
-              slug: "/courses/category/medical-technology",
-            },
-          ]);
+          // Use default categories if API returns empty
+          useDefaultCategories();
         }
       } catch (error) {
-        console.error('Error loading categories:', error);
+        console.error('Error fetching categories:', error);
+        // Fallback to default categories if API call fails
+        useDefaultCategories();
       } finally {
         setLoading(false);
       }
@@ -175,7 +173,7 @@ const CourseCategories = () => {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            Comprehensive learning paths tailored to your medical education needs
+            Comprehensive learning paths tailored to your educational needs
           </motion.p>
         </div>
         

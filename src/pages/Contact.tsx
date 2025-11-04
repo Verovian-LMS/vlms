@@ -75,7 +75,7 @@ const Contact = () => {
                 </div>
                 <h3 className="text-lg font-bold text-gray-900 mb-2">Visit Our Office</h3>
                 <p className="text-gray-600">
-                  123 Medical Campus Drive<br />
+                  123 Learning Campus Drive<br />
                   San Francisco, CA 94103<br />
                   United States
                 </p>
@@ -108,8 +108,8 @@ const Contact = () => {
                 </div>
                 <h3 className="text-lg font-bold text-gray-900 mb-2">Email Us</h3>
                 <p className="text-gray-600">
-                  support@medmaster.com<br />
-                  partnerships@medmaster.com
+                  support@verovian.com<br />
+            partnerships@verovian.com
                 </p>
               </motion.div>
             </div>
@@ -190,7 +190,7 @@ const Contact = () => {
                           How do I get technical support for the platform?
                         </h3>
                         <p className="text-gray-600">
-                          For technical issues, please email support@medmaster.com with details of the problem, including screenshots if possible. Our team typically responds within 24 hours on business days.
+                          For technical issues, please email support@verovian.com with details of the problem, including screenshots if possible. Our team typically responds within 24 hours on business days.
                         </p>
                       </div>
                     </div>
@@ -222,7 +222,7 @@ const Contact = () => {
                           How do I request a refund?
                         </h3>
                         <p className="text-gray-600">
-                          If you're not satisfied with your purchase, you can request a refund within 30 days by emailing billing@medmaster.com with your order details and reason for the refund.
+                          If you're not satisfied with your purchase, you can request a refund within 30 days by emailing billing@verovian.com with your order details and reason for the refund.
                         </p>
                       </div>
                     </div>
@@ -257,8 +257,8 @@ const Contact = () => {
                 <div className="w-full h-full flex items-center justify-center bg-slate-100">
                   <div className="text-center">
                     <MapPin className="h-12 w-12 text-medblue-600 mx-auto mb-2" />
-                    <h3 className="text-xl font-bold">MedMaster Headquarters</h3>
-                    <p className="text-gray-600">123 Medical Campus Drive, San Francisco</p>
+                    <h3 className="text-xl font-bold">EduMaster Headquarters</h3>
+                    <p className="text-gray-600">123 Education Campus Drive, San Francisco</p>
                   </div>
                 </div>
               </div>

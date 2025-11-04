@@ -19,7 +19,7 @@ interface ProgressDashboardProps {
   learningData: {
     date: string;
     timeSpent: number;
-    lecturesCompleted: number;
+    lessonsCompleted: number;
   }[];
   quizScores: {
     quizName: string;

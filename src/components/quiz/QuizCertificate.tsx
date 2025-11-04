@@ -5,7 +5,6 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Download, Share2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/context/AuthContext";
 import html2canvas from "html2canvas";
 import QRCode from "react-qr-code";
 
@@ -30,7 +29,6 @@ const QuizCertificate: React.FC<QuizCertificateProps> = ({
 }) => {
   const certificateRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
-  const { user } = useAuth();
   
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat('en-US', {

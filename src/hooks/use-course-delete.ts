@@ -1,21 +1,18 @@
 
-import { supabase } from '@/integrations/supabase/client';
-import { User } from '@supabase/supabase-js';
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "@/components/ui/use-toast";
+import { apiClient } from '@/lib/api/client';
 
-export function useCourseDelete(user: User | null) {
+export function useCourseDelete(user: any | null) {
   // Delete a course and all its related content
   const deleteCourse = async (courseId: string): Promise<void> => {
     try {
-      // Due to cascade delete setup in Supabase, deleting the course
-      // will automatically delete related modules and lectures
-      const { error } = await supabase
-        .from('courses')
-        .delete()
-        .eq('id', courseId);
+      // Delete the course using FastAPI client
+      const response = await apiClient.deleteCourse(courseId);
 
-      if (error) throw error;
+      if (response.error) {
+        throw new Error(`Failed to delete course: ${response.error}`);
+      }
 
       toast({
         title: "Course Deleted",

@@ -7,7 +7,7 @@ MedMaster offers a comprehensive suite of features designed specifically for med
 
 ### Courses
 - Structured learning paths covering specific medical topics
-- Multiple modules with video lectures, readings, and assessments
+- Multiple modules with video lessons, readings, and assessments
 - Progress tracking and completion certificates
 - Downloadable resources and supplementary materials
 
@@ -28,7 +28,7 @@ MedMaster offers a comprehensive suite of features designed specifically for med
 
 ### Progress Tracking
 - Course completion percentage
-- Individual lecture progress indicators
+- Individual lesson progress indicators
 - Resume learning from where you left off
 - Completed content indicators
 

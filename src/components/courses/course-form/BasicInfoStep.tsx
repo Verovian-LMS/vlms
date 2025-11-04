@@ -25,6 +25,7 @@ import { courseCategories, courseLevels } from "@/lib/validations/course";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import ImageUploadField from "./ImageUploadField";
 
 interface BasicInfoStepProps {
   form: UseFormReturn<CourseFormValues>;
@@ -51,7 +52,7 @@ export const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
   if (!activeForm || !activeForm.control) {
     console.error("Form context is missing in BasicInfoStep");
     return (
-      <Card className="p-6">
+      <Card className="p-4">
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
@@ -63,7 +64,7 @@ export const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
   }
 
   return (
-    <Card className="p-6 bg-white">
+    <Card className="p-4 bg-white">
       <div className="space-y-6">
         <h2 className="text-2xl font-bold font-heading">Basic Information</h2>
 
@@ -182,10 +183,28 @@ export const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
               <FormItem>
                 <FormLabel>Course Image</FormLabel>
                 <FormControl>
-                  <div className="space-y-4">
-                    <Input
+                  <div className="space-y-2">
+                    <ImageUploadField
+                      imagePreview={field.value}
+                      uploadProgress={uploadProgress}
+                      onImageSelect={() => {
+                        document.getElementById("course-image-input")?.click();
+                      }}
+                      onImageRemove={() => {
+                        activeForm.setValue("imageFile", null);
+                        activeForm.setValue("imagePreview", null);
+                      }}
+                      onFileDrop={(file) => {
+                        activeForm.setValue("imageFile", file);
+                        onImageUpload(file);
+                      }}
+                    />
+                    {/* Hidden input to support file picker */}
+                    <input
+                      id="course-image-input"
                       type="file"
                       accept="image/*"
+                      className="hidden"
                       onChange={(e) => {
                         const file = e.target.files?.[0];
                         if (file) {
@@ -194,18 +213,6 @@ export const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
                         }
                       }}
                     />
-                    {uploadProgress > 0 && (
-                      <Progress value={uploadProgress} className="w-full" />
-                    )}
-                    {field.value && (
-                      <div className="relative w-full h-40 rounded-md overflow-hidden">
-                        <img 
-                          src={field.value} 
-                          alt="Course Preview" 
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    )}
                   </div>
                 </FormControl>
                 <FormDescription>

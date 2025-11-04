@@ -34,11 +34,11 @@ This comprehensive guide will help you navigate and use all aspects of the MedMa
 ## Learning with MedMaster
 
 ### Navigating Course Content
-- Use the course sidebar to navigate between modules and lectures
+- Use the course sidebar to navigate between modules and lessons
 - Track your progress with completion indicators
 - Use the search function to find specific topics
 
-### Video Lecture Controls
+### Video Lesson Controls
 - Play/pause: Use the play button or spacebar
 - Adjust volume: Use the volume slider
 - Change playback speed: Select from 0.5x to 2x speed
@@ -47,7 +47,7 @@ This comprehensive guide will help you navigate and use all aspects of the MedMa
 
 ### Progress Tracking
 - View overall course progress on the dashboard
-- See individual lecture completion status
+- See individual lesson completion status
 - Resume from where you left off with one click
 
 ## Participating in Webinars

@@ -4,8 +4,7 @@ import { useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/context/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/context/FastApiAuthContext";
 import { 
   Card, 
   CardContent, 
@@ -118,64 +117,11 @@ const CourseDiscussions: React.FC = () => {
 
       try {
         setIsLoading(true);
-        
-        const { data, error } = await supabase
-          .from('discussions')
-          .select(`
-            id, 
-            title, 
-            description,
-            created_at,
-            is_pinned,
-            is_closed,
-            created_by,
-            profiles:created_by (
-              name,
-              avatar
-            )
-          `)
-          .eq('course_id', courseId)
-          .order('is_pinned', { ascending: false })
-          .order('created_at', { ascending: false });
-          
-        if (error) {
-          console.error('Error fetching discussions:', error);
-          toast({
-            title: "Error",
-            description: "Failed to load course discussions",
-            variant: "destructive"
-          });
-          return;
-        }
-        
-        // For each discussion, get the count of posts
-        if (data) {
-          const discussionsWithCounts = await Promise.all(
-            data.map(async (discussion) => {
-              const { count, error: countError } = await supabase
-                .from('discussion_posts')
-                .select('id', { count: 'exact', head: true })
-                .eq('discussion_id', discussion.id);
-                
-              if (countError) {
-                console.error('Error counting posts:', countError);
-                return {
-                  ...discussion,
-                  creator: discussion.profiles,
-                  post_count: 0
-                };
-              }
-              
-              return {
-                ...discussion,
-                creator: discussion.profiles,
-                post_count: count || 0
-              };
-            })
-          );
-          
-          setDiscussions(discussionsWithCounts);
-        }
+        toast({
+          title: "Coming Soon",
+          description: "Course discussions are being migrated. Topics are temporarily unavailable.",
+        });
+        setDiscussions([]);
       } catch (error) {
         console.error('Error in fetchDiscussions:', error);
       } finally {
@@ -208,56 +154,11 @@ const CourseDiscussions: React.FC = () => {
     setIsSubmitting(true);
     
     try {
-      const { data, error } = await supabase
-        .from('discussions')
-        .insert({
-          title: newTitle.trim(),
-          description: newDescription.trim(),
-          course_id: courseId,
-          created_by: user?.id
-        })
-        .select(`
-          id, 
-          title, 
-          description,
-          created_at,
-          is_pinned,
-          is_closed,
-          created_by,
-          profiles:created_by (
-            name,
-            avatar
-          )
-        `)
-        .single();
-        
-      if (error) {
-        console.error('Error creating topic:', error);
-        toast({
-          title: "Error",
-          description: "Failed to create new topic",
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      // Add the new topic to the list
-      if (data) {
-        setDiscussions(prevDiscussions => [{
-          ...data,
-          creator: data.profiles,
-          post_count: 0
-        }, ...prevDiscussions]);
-        
-        setNewTopicOpen(false);
-        setNewTitle("");
-        setNewDescription("");
-        
-        toast({
-          title: "Topic created",
-          description: "Your new discussion topic has been created",
-        });
-      }
+      toast({
+        title: "Feature unavailable",
+        description: "Discussion creation is temporarily disabled during migration.",
+        variant: "destructive"
+      });
     } catch (error) {
       console.error('Error in handleCreateTopic:', error);
       toast({

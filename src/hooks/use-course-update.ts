@@ -1,36 +1,31 @@
 
-import { supabase } from '@/integrations/supabase/client';
-import { User } from '@supabase/supabase-js';
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "@/components/ui/use-toast";
 import type { Course } from "@/types/course";
+import { apiClient } from '@/lib/api/client';
 
 type UpdateCourseVariables = {
   courseId: string;
   data: Partial<any>; // Using any for simplicity, but ideally would use a proper type
 };
 
-export function useCourseUpdate(user: User | null) {
+export function useCourseUpdate(user: any | null) {
   // Update an existing course
   const updateCourse = async ({ courseId, data }: UpdateCourseVariables): Promise<Course | null> => {
     try {
       // 1. Update course basic info
-      const { data: response, error } = await supabase
-        .from('courses')
-        .update({
-          title: data.title,
-          description: data.description,
-          long_description: data.longDescription,
-          category: data.category,
-          level: data.level,
-          image_url: data.imagePreview,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', courseId)
-        .select()
-        .single();
+      const response = await apiClient.updateCourse(courseId, {
+        title: data.title,
+        description: data.description,
+        long_description: data.longDescription,
+        category: data.category,
+        level: data.level,
+        image_url: data.imagePreview,
+      });
 
-      if (error) throw error;
+      if (response.error) {
+        throw new Error(`Failed to update course: ${response.error}`);
+      }
 
       // 2. Update modules (if changed)
       if (data.modules && Array.isArray(data.modules)) {
@@ -39,70 +34,51 @@ export function useCourseUpdate(user: User | null) {
           
           if (module.id && module.id.startsWith('new_')) {
             // Create new module
-            const { error: moduleError } = await supabase
-              .from('modules')
-              .insert({
-                course_id: courseId,
-                title: module.title || 'Untitled Module',
-                description: module.description || '',
-                sequence_order: data.modules.indexOf(module),
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
-              });
-            if (moduleError) throw moduleError;
+            const moduleResponse = await apiClient.createCourseModule(courseId, {
+              title: module.title || 'Untitled Module',
+              description: module.description || '',
+              sequence_order: data.modules.indexOf(module),
+            });
+            if (moduleResponse.error) throw new Error(`Failed to create module: ${moduleResponse.error}`);
           } else if (module.id) {
             // Update existing module
-            const { error: moduleError } = await supabase
-              .from('modules')
-              .update({
-                title: module.title || 'Untitled Module',
-                description: module.description || '',
-                sequence_order: data.modules.indexOf(module),
-                updated_at: new Date().toISOString()
-              })
-              .eq('id', module.id);
-            if (moduleError) throw moduleError;
+            const moduleResponse = await apiClient.updateCourseModule(courseId, module.id, {
+              title: module.title || 'Untitled Module',
+              description: module.description || '',
+              sequence_order: data.modules.indexOf(module),
+            });
+            if (moduleResponse.error) throw new Error(`Failed to update module: ${moduleResponse.error}`);
           }
 
-          // Update lectures for this module if they exist
-          if (module.lectures && Array.isArray(module.lectures)) {
-            for (const lecture of module.lectures) {
-              if (!lecture) continue; // Skip if lecture is null or undefined
-              
-              if (lecture.id && lecture.id.startsWith('new_')) {
-                // Create new lecture
-                const { error: lectureError } = await supabase
-                  .from('lectures')
-                  .insert({
-                    module_id: module.id,
-                    title: lecture.title || 'Untitled Lecture',
-                    description: lecture.description || '',
-                    video_url: lecture.videoUrl || '',
-                    duration_minutes: lecture.duration || 0,
-                    duration: lecture.duration || 0, // Add the duration field as well
-                    notes: lecture.notes || '', // Ensure notes field is populated
-                    sequence_order: module.lectures.indexOf(lecture),
-                    content_type: 'video',
-                    created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString()
-                  });
-                if (lectureError) throw lectureError;
-              } else if (lecture.id) {
-                // Update existing lecture
-                const { error: lectureError } = await supabase
-                  .from('lectures')
-                  .update({
-                    title: lecture.title || 'Untitled Lecture',
-                    description: lecture.description || '',
-                    video_url: lecture.videoUrl || '',
-                    duration_minutes: lecture.duration || 0,
-                    duration: lecture.duration || 0, // Update both duration fields
-                    notes: lecture.notes || '', // Ensure notes field is populated
-                    sequence_order: module.lectures.indexOf(lecture),
-                    updated_at: new Date().toISOString()
-                  })
-                  .eq('id', lecture.id);
-                if (lectureError) throw lectureError;
+          // Update lessons for this module if they exist
+          if (module.lessons && Array.isArray(module.lessons)) {
+            for (const lesson of module.lessons) {
+              if (!lesson) continue; // Skip if lesson is null or undefined
+
+              const commonPayload = {
+                title: lesson.title || 'Untitled Lesson',
+                description: lesson.description || '',
+                video_url: lesson.videoUrl || '',
+                pdf_url: lesson.pdfUrl || '',
+                slides_url: lesson.slidesUrl || '',
+                audio_url: lesson.audioUrl || '',
+                document_url: lesson.documentUrl || '',
+                interactive_url: lesson.interactiveUrl || '',
+                downloadable_url: lesson.downloadableUrl || '',
+                duration: lesson.duration || 0,
+                notes: lesson.notes || '',
+                sequence_order: module.lessons.indexOf(lesson),
+                content_type: lesson.contentType || 'video',
+              };
+
+              if (lesson.id && lesson.id.startsWith('new_')) {
+                // Create new lesson
+                const createResponse = await apiClient.createModuleLesson(module.id, commonPayload);
+                if (createResponse.error) throw new Error(`Failed to create lesson: ${createResponse.error}`);
+              } else if (lesson.id) {
+                // Update existing lesson
+                const updateResponse = await apiClient.updateLesson(lesson.id, commonPayload);
+                if (updateResponse.error) throw new Error(`Failed to update lesson: ${updateResponse.error}`);
               }
             }
           }
@@ -114,7 +90,7 @@ export function useCourseUpdate(user: User | null) {
         description: "Your course has been updated successfully!"
       });
 
-      return response;
+      return response.data;
 
     } catch (error: any) {
       console.error("Error updating course:", error);

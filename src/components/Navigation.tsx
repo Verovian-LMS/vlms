@@ -15,7 +15,7 @@ import {
   PlusCircle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/context/FastApiAuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const Navigation = () => {
@@ -42,7 +42,7 @@ const Navigation = () => {
           <div className="flex items-center">
             <Link to="/" className="flex items-center space-x-2">
               <GraduationCap className="w-8 h-8 text-medblue-600" />
-              <span className="text-xl font-bold text-medblue-900">MedMaster</span>
+              <span className="text-xl font-bold text-medblue-900">EduMaster</span>
             </Link>
           </div>
 
@@ -116,7 +116,7 @@ const Navigation = () => {
           <div className="flex justify-between items-center mb-8">
             <Link to="/" className="flex items-center space-x-2" onClick={() => setIsOpen(false)}>
               <GraduationCap className="w-8 h-8 text-medblue-600" />
-              <span className="text-xl font-bold text-medblue-900">MedMaster</span>
+              <span className="text-xl font-bold text-medblue-900">EduMaster</span>
             </Link>
             <Button variant="ghost" size="sm" onClick={() => setIsOpen(false)}>
               <X className="w-6 h-6" />

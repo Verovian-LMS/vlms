@@ -2,18 +2,18 @@
 import React, { useState } from 'react';
 import ContentTypeSelector from './ContentTypeSelector';
 import ContentTypeUploader from '@/components/courses/course-form/ContentTypeUploader';
-import { LectureContentType } from '@/types/course';
+import { LessonContentType } from '@/types/course';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 
 interface EnhancedContentTypeSelectorProps {
   moduleId: string;
-  lectureId: string;
-  initialContentType?: LectureContentType;
+  lessonId: string;
+  initialContentType?: LessonContentType;
   onContentSelected: (
     moduleId: string,
-    lectureId: string,
-    contentType: LectureContentType,
+    lessonId: string,
+    contentType: LessonContentType,
     data: any
   ) => void;
   uploadProgress?: number;
@@ -24,7 +24,7 @@ interface EnhancedContentTypeSelectorProps {
 
 const EnhancedContentTypeSelector: React.FC<EnhancedContentTypeSelectorProps> = ({
   moduleId,
-  lectureId,
+  lessonId,
   initialContentType = 'video',
   onContentSelected,
   uploadProgress = 0,
@@ -32,18 +32,18 @@ const EnhancedContentTypeSelector: React.FC<EnhancedContentTypeSelectorProps> = 
   error = null,
   previewUrl = null
 }) => {
-  const [selectedType, setSelectedType] = useState<LectureContentType>(initialContentType);
+  const [selectedType, setSelectedType] = useState<LessonContentType>(initialContentType);
 
-  const handleContentTypeChange = (type: LectureContentType) => {
+  const handleContentTypeChange = (type: LessonContentType) => {
     setSelectedType(type);
   };
 
   const handleFileSelect = (file: File) => {
-    onContentSelected(moduleId, lectureId, selectedType, { file });
+    onContentSelected(moduleId, lessonId, selectedType, { file });
   };
 
   const handleUrlChange = (url: string) => {
-    onContentSelected(moduleId, lectureId, selectedType, { url });
+    onContentSelected(moduleId, lessonId, selectedType, { url });
   };
 
   return (
@@ -51,7 +51,7 @@ const EnhancedContentTypeSelector: React.FC<EnhancedContentTypeSelectorProps> = 
       <div className="space-y-2">
         <h3 className="text-lg font-heading font-medium">Select Content Type</h3>
         <p className="text-sm text-slate-500 font-exo2">
-          Choose the type of content you want to add to this lecture
+          Choose the type of content you want to add to this lesson
         </p>
       </div>
 
@@ -72,7 +72,7 @@ const EnhancedContentTypeSelector: React.FC<EnhancedContentTypeSelectorProps> = 
         error={error}
         previewUrl={previewUrl}
         moduleId={moduleId}
-        lectureId={lectureId}
+        lessonId={lessonId}
       />
     </div>
   );

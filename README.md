@@ -49,7 +49,7 @@ To view the documentation locally:
 
 ## About MedMaster
 
-MedMaster is a comprehensive medical education platform designed for medical students, professionals, and educators. The platform offers a wide range of courses, lectures, and resources to help users advance their medical knowledge and skills.
+MedMaster is a comprehensive medical education platform designed for medical students, professionals, and educators. The platform offers a wide range of courses, lessons, and resources to help users advance their medical knowledge and skills.
 
 ## License
 

@@ -19,9 +19,9 @@ interface CourseModulesStepProps {
   uploadVideo: (
     file: File,
     moduleId: string,
-    lectureId: string, 
-    onSuccess: (lectureId: string, url: string, duration: string) => void,
-    onError?: (lectureId: string, error: Error) => void
+    lessonId: string, 
+    onSuccess: (lessonId: string, url: string, duration: string) => void,
+    onError?: (lessonId: string, error: Error) => void
   ) => Promise<void>;
   uploadStatuses: Record<string, { isUploading: boolean; progress: number; error?: string | null }>;
   storageReady?: boolean;
@@ -52,16 +52,16 @@ export const CourseModulesStep: React.FC<CourseModulesStepProps> = ({
   // Add a new module
   const addModule = () => {
     const newModuleId = uuidv4();
-    const newLectureId = uuidv4();
+    const newLessonId = uuidv4();
     
     const newModule = {
       id: newModuleId,
       title: `Module ${modules.length + 1}`,
       description: '',
-      lectures: [
+      lessons: [
         {
-          id: newLectureId,
-          title: 'Lecture 1',
+          id: newLessonId,
+          title: 'Lesson 1',
           description: '',
           videoUrl: null,
           duration: 0,
@@ -109,18 +109,18 @@ export const CourseModulesStep: React.FC<CourseModulesStepProps> = ({
     form.setValue('modules', updatedModules);
   };
 
-  // Add a lecture to a module
-  const addLecture = (moduleId: string) => {
+  // Add a lesson to a module
+  const addLesson = (moduleId: string) => {
     const updatedModules = modules.map((module: CourseModule) => {
       if (module.id === moduleId) {
-        const lectures = module.lectures || [];
+        const lessons = module.lessons || [];
         return {
           ...module,
-          lectures: [
-            ...lectures,
+          lessons: [
+            ...lessons,
             {
               id: uuidv4(),
-              title: `Lecture ${lectures.length + 1}`,
+              title: `Lesson ${lessons.length + 1}`,
               description: '',
               videoUrl: null,
               duration: 0,
@@ -135,18 +135,18 @@ export const CourseModulesStep: React.FC<CourseModulesStepProps> = ({
     form.setValue('modules', updatedModules);
     
     toast({
-      title: "Lecture added",
-      description: "New lecture has been added to the module.",
+      title: "Lesson added",
+      description: "New lesson has been added to the module.",
     });
   };
 
-  // Remove a lecture from a module
-  const removeLecture = (moduleId: string, lectureId: string) => {
+  // Remove a lesson from a module
+  const removeLesson = (moduleId: string, lessonId: string) => {
     const updatedModules = modules.map((module: CourseModule) => {
       if (module.id === moduleId) {
         return {
           ...module,
-          lectures: module.lectures.filter(lecture => lecture.id !== lectureId)
+          lessons: module.lessons.filter(lesson => lesson.id !== lessonId)
         };
       }
       return module;
@@ -155,15 +155,15 @@ export const CourseModulesStep: React.FC<CourseModulesStepProps> = ({
     form.setValue('modules', updatedModules);
     
     toast({
-      title: "Lecture removed",
-      description: "Lecture has been removed from the module.",
+      title: "Lesson removed",
+      description: "Lesson has been removed from the module.",
     });
   };
 
-  // Update a lecture field
-  const updateLecture = (moduleId: string, lectureId: string, field: string, value: any) => {
+  // Update a lesson field
+  const updateLesson = (moduleId: string, lessonId: string, field: string, value: any) => {
     // Special case for module description
-    if (lectureId === "module_description" && field === "description") {
+    if (lessonId === "module_description" && field === "description") {
       const updatedModules = modules.map((module: CourseModule) => {
         if (module.id === moduleId) {
           return { ...module, description: value };
@@ -178,11 +178,11 @@ export const CourseModulesStep: React.FC<CourseModulesStepProps> = ({
       if (module.id === moduleId) {
         return {
           ...module,
-          lectures: module.lectures.map(lecture => {
-            if (lecture.id === lectureId) {
-              return { ...lecture, [field]: value };
+          lessons: module.lessons.map(lesson => {
+            if (lesson.id === lessonId) {
+              return { ...lesson, [field]: value };
             }
-            return lecture;
+            return lesson;
           })
         };
       }
@@ -196,16 +196,16 @@ export const CourseModulesStep: React.FC<CourseModulesStepProps> = ({
   useEffect(() => {
     if (!modules || modules.length === 0) {
       const newModuleId = uuidv4();
-      const newLectureId = uuidv4();
+      const newLessonId = uuidv4();
       
       form.setValue('modules', [{
         id: newModuleId,
         title: 'Module 1',
         description: '',
-        lectures: [
+        lessons: [
           {
-            id: newLectureId,
-            title: 'Lecture 1',
+            id: newLessonId,
+            title: 'Lesson 1',
             description: '',
             videoUrl: null,
             duration: 0,
@@ -224,7 +224,7 @@ export const CourseModulesStep: React.FC<CourseModulesStepProps> = ({
       <div>
         <h2 className="text-xl font-semibold mb-1">Course Content</h2>
         <p className="text-sm text-gray-500 mb-4">
-          Organize your course into modules and lectures. Upload videos for each lecture.
+          Organize your course into modules and lessons. Upload videos for each lesson.
         </p>
         
         {!storageReady && (
@@ -247,7 +247,7 @@ export const CourseModulesStep: React.FC<CourseModulesStepProps> = ({
       </div>
 
       <div className="space-y-6">
-        <FormLabel htmlFor="modules">Modules & Lectures</FormLabel>
+        <FormLabel htmlFor="modules">Modules & Lessons</FormLabel>
         
         {modules.length === 0 ? (
           <div className="bg-gray-50 p-8 text-center rounded-lg border-2 border-dashed border-gray-200">

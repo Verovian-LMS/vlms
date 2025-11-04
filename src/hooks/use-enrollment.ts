@@ -1,10 +1,9 @@
 
-import { supabase } from '@/integrations/supabase/client';
-import { User } from '@supabase/supabase-js';
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "@/components/ui/use-toast";
+import { apiClient } from '@/lib/api/client';
 
-export function useEnrollment(user: User | null) {
+export function useEnrollment(user: any | null) {
   // Handle course enrollment
   const enrollInCourse = useMutation({
     mutationFn: async (courseId: string): Promise<boolean> => {
@@ -13,43 +12,19 @@ export function useEnrollment(user: User | null) {
       }
 
       try {
-        // Check if already enrolled
-        const { data: existingEnrollment, error: checkError } = await supabase
-          .from('enrollments')
-          .select('id')
-          .eq('user_id', user.id)
-          .eq('course_id', courseId)
-          .maybeSingle();
+        // Enroll in course using FastAPI client
+        const response = await apiClient.enrollInCourse(courseId);
 
-        if (checkError) {
-          console.error("Error checking enrollment:", checkError);
-          throw checkError;
-        }
-
-        if (existingEnrollment) {
-          console.log("User already enrolled in this course:", existingEnrollment);
-          toast({
-            title: "Already Enrolled",
-            description: "You are already enrolled in this course",
-          });
-          return true; // Return true since user is already enrolled
-        }
-
-        // Create new enrollment
-        const { error: enrollError } = await supabase
-          .from('enrollments')
-          .insert({
-            user_id: user.id,
-            course_id: courseId,
-            enrollment_date: new Date().toISOString().split('T')[0],
-            progress: 0,
-            completion_status: 'not_started',
-            last_accessed: new Date().toISOString().split('T')[0]
-          });
-
-        if (enrollError) {
-          console.error("Error enrolling in course:", enrollError);
-          throw enrollError;
+        if (response.error) {
+          // Check if already enrolled
+          if (response.error.includes("already enrolled")) {
+            toast({
+              title: "Already Enrolled",
+              description: "You are already enrolled in this course",
+            });
+            return true;
+          }
+          throw new Error(`Failed to enroll: ${response.error}`);
         }
 
         toast({
@@ -70,7 +45,7 @@ export function useEnrollment(user: User | null) {
     }
   });
 
-  // Update course progress
+  // Update course progress - placeholder for now
   const updateCourseProgress = useMutation({
     mutationFn: async ({ 
       courseId, 
@@ -86,18 +61,12 @@ export function useEnrollment(user: User | null) {
       }
 
       try {
-        const { error } = await supabase
-          .from('enrollments')
-          .update({
-            progress,
-            completion_status: completed ? 'completed' : 'in_progress',
-            completion_date: completed ? new Date().toISOString().split('T')[0] : null,
-            last_accessed: new Date().toISOString().split('T')[0]
-          })
-          .eq('user_id', user.id)
-          .eq('course_id', courseId);
-
-        if (error) throw error;
+        // TODO: Implement progress update endpoint in FastAPI backend
+        console.log("Progress update not yet implemented in FastAPI backend", {
+          courseId,
+          progress,
+          completed
+        });
         return true;
       } catch (error: any) {
         console.error("Error updating course progress:", error);

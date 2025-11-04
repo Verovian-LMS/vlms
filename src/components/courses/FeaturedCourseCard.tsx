@@ -41,7 +41,7 @@ export const FeaturedCourseCard: React.FC<FeaturedCourseCardProps> = ({ course, 
           
           <div className="flex items-center text-sm text-gray-500 mb-3">
             <BadgeCheck className="h-4 w-4 mr-1 text-green-500" />
-            <span className="mr-4 font-exo2">{course.lectures || 0} lessons</span>
+            <span className="mr-4 font-exo2">{course.lessons ?? 0} lessons</span>
             <Clock className="h-4 w-4 mr-1" />
             <span className="font-exo2">{course.modules || 0} hours</span>
           </div>

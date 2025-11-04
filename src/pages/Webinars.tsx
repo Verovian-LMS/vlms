@@ -29,7 +29,7 @@ const webinars = [
     attendees: 423,
     thumbnailUrl: "https://images.unsplash.com/photo-1576091160550-2173dba999ef",
     videoUrl: "https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4",
-    category: "Cardiology",
+    category: "Natural Sciences",
     progress: 0
   },
   {
@@ -42,12 +42,12 @@ const webinars = [
     attendees: 312,
     thumbnailUrl: "https://images.unsplash.com/photo-1530026186672-2cd00ffc50fe",
     videoUrl: "https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_2mb.mp4",
-    category: "Cardiology",
+    category: "Natural Sciences",
     progress: 25
   },
   {
     id: 3,
-    title: "Neurological Examination for Medical Students",
+    title: "Examination Techniques for Students",
     description: "Step-by-step approach to comprehensive neurological assessment",
     date: "June 18, 2023",
     duration: "55 minutes",
@@ -55,7 +55,7 @@ const webinars = [
     attendees: 289,
     thumbnailUrl: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56",
     videoUrl: "https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_5mb.mp4",
-    category: "Neurology",
+    category: "Life Sciences",
     progress: 75
   },
   {
@@ -73,28 +73,26 @@ const webinars = [
   },
   {
     id: 5,
-    title: "Pharmacology of Antibiotics: Clinical Applications",
-    description: "Evidence-based approach to antibiotic selection in clinical practice",
+    title: "Research Methods: Evidence-based Approaches",
+    description: "Evidence-based approach to research methodology and best practices",
     date: "July 22, 2023",
     duration: "65 minutes",
     instructor: "Dr. Patricia Khan",
     attendees: 401,
     thumbnailUrl: "https://images.unsplash.com/photo-1471864190281-a93a3070b6de",
     videoUrl: "https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4",
-    category: "Pharmacology",
+    category: "Applied Sciences",
     progress: 10
   }
 ];
 
 // Categories for filtering
 const categories = [
-  "All Webinars",
-  "Cardiology",
-  "Neurology",
-  "Pulmonology",
-  "Pharmacology",
-  "Surgery",
-  "Internal Medicine"
+  "All Categories",
+  "Natural Sciences",
+  "Life Sciences", 
+  "Applied Sciences",
+  "Technology"
 ];
 
 const Webinars = () => {
@@ -139,9 +137,9 @@ const Webinars = () => {
               transition={{ duration: 0.5 }}
               className="max-w-3xl mx-auto text-center"
             >
-              <h1 className="text-4xl font-bold mb-4">Medical Webinars</h1>
+              <h1 className="text-4xl font-bold mb-4">Educational Webinars</h1>
               <p className="text-xl text-blue-100">
-                Access our library of expert-led webinars to enhance your medical knowledge and skills
+                Access our library of expert-led webinars to enhance your knowledge and skills
               </p>
             </motion.div>
           </div>
@@ -307,7 +305,7 @@ const Webinars = () => {
                           </div>
                           <div>
                             <h3 className="font-bold">{currentWebinar.instructor}</h3>
-                            <p className="text-sm text-gray-500">Medical Faculty, Harvard University</p>
+                            <p className="text-sm text-gray-500">Faculty, Harvard University</p>
                           </div>
                         </div>
                         

@@ -123,7 +123,7 @@ const CaseStudySimulator: React.FC<CaseStudySimulatorProps> = ({
             
             <p className="text-sm text-slate-600">
               You've worked through all scenarios and provided your insights.
-              This experience will help prepare you for real-world clinical situations.
+              This experience will help prepare you for real-world practical situations.
             </p>
           </div>
           

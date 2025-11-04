@@ -5,7 +5,7 @@ import type {
   RequirementItem,
   LearningPointItem,
   CourseModule,
-  LectureUpload
+  LessonUpload
 } from '@/types/course';
 import { CourseFormValues } from "@/lib/validations/course";
 
@@ -39,8 +39,8 @@ export const useCourseForm = () => {
     return formState.modules.length > 0 && 
            formState.modules.every(module => 
              module.title.trim() !== '' && 
-             module.lectures.length > 0 && 
-             module.lectures.every(lecture => lecture.title.trim() !== '')
+             module.lessons.length > 0 && 
+             module.lessons.every(lesson => lesson.title.trim() !== '')
            );
   };
 

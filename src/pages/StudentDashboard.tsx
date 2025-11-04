@@ -1,55 +1,102 @@
 
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import ProgressDashboard from '@/components/dashboard/ProgressDashboard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/context/FastApiAuthContext';
+import { apiClient } from '@/lib/api/client';
 
 const StudentDashboard: React.FC = () => {
   const { user, profile } = useAuth();
-  
-  // Sample data - in a real application, this would come from your backend
-  const sampleData = {
-    studentName: profile?.name || 'Student',
-    overallProgress: 65,
-    courseProgress: [
-      {
-        courseId: 'course1',
-        courseName: 'Introduction to Medical Anatomy',
-        progress: 80,
-        lastAccessed: '2023-05-10T14:32:00Z',
-      },
-      {
-        courseId: 'course2',
-        courseName: 'Fundamentals of Physiology',
-        progress: 45,
-        lastAccessed: '2023-05-08T09:15:00Z',
-      },
-      {
-        courseId: 'course3',
-        courseName: 'Clinical Skills Basics',
-        progress: 30,
-        lastAccessed: '2023-05-12T16:45:00Z',
+
+  const [studentName, setStudentName] = useState<string>(profile?.name || 'Student');
+  const [overallProgress, setOverallProgress] = useState<number>(0);
+  const [courseProgress, setCourseProgress] = useState<Array<{ courseId: string; courseName: string; progress: number; lastAccessed: string }>>([]);
+  const [learningData, setLearningData] = useState<Array<{ date: string; timeSpent: number; lessonsCompleted: number }>>([]);
+  const [quizScores, setQuizScores] = useState<Array<{ quizName: string; score: number; maxScore: number }>>([]);
+
+  useEffect(() => {
+    setStudentName(profile?.name || 'Student');
+  }, [profile?.name]);
+
+  useEffect(() => {
+    const loadDashboard = async () => {
+      if (!user) return;
+
+      try {
+        // Load enrolled courses
+        const myCoursesResp = await apiClient.get<any[]>(`/api/v1/courses/my-courses`);
+        const courses = myCoursesResp.data || [];
+
+        // For each course, fetch progress
+        const courseProg = await Promise.all(
+          courses.map(async (course: any) => {
+            try {
+              const pResp = await apiClient.getCourseProgress(course.id);
+              const p = pResp.data?.progress ?? 0;
+              return {
+                courseId: course.id,
+                courseName: course.title || 'Untitled Course',
+                progress: p,
+                lastAccessed: course.updated_at || course.created_at || new Date().toISOString(),
+              };
+            } catch (e) {
+              return {
+                courseId: course.id,
+                courseName: course.title || 'Untitled Course',
+                progress: 0,
+                lastAccessed: course.updated_at || course.created_at || new Date().toISOString(),
+              };
+            }
+          })
+        );
+        setCourseProgress(courseProg);
+
+        // Compute overall progress as average across courses
+        if (courseProg.length > 0) {
+          const avg = Math.round(courseProg.reduce((sum, c) => sum + (c.progress || 0), 0) / courseProg.length);
+          setOverallProgress(avg);
+        } else {
+          setOverallProgress(0);
+        }
+
+        // Build simple learning activity from recent activity (lessons completed/viewed per day)
+        try {
+          const actResp = await apiClient.getRecentActivity();
+          const activities = actResp.data || [];
+          const byDay: Record<string, number> = {};
+          activities.forEach((a: any) => {
+            const d = new Date(a.created_at);
+            const key = d.toLocaleDateString(undefined, { weekday: 'short' });
+            byDay[key] = (byDay[key] || 0) + 1;
+          });
+          const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+          const todayIndex = new Date().getDay();
+          const last7 = Array.from({ length: 7 }).map((_, i) => weekdays[(todayIndex - (6 - i) + 7) % 7]);
+          const learning = last7.map((day) => ({
+            date: day,
+            timeSpent: 0,
+            lessonsCompleted: byDay[day] || 0,
+          }));
+          setLearningData(learning);
+        } catch (e) {
+          setLearningData([]);
+        }
+
+        // Quiz scores: no endpoint yet, leave empty to avoid mock data
+        setQuizScores([]);
+      } catch (err) {
+        // fall back to empty real values
+        setCourseProgress([]);
+        setOverallProgress(0);
+        setLearningData([]);
+        setQuizScores([]);
       }
-    ],
-    learningData: [
-      { date: 'Mon', timeSpent: 1.5, lecturesCompleted: 3 },
-      { date: 'Tue', timeSpent: 2.2, lecturesCompleted: 5 },
-      { date: 'Wed', timeSpent: 1.0, lecturesCompleted: 2 },
-      { date: 'Thu', timeSpent: 3.5, lecturesCompleted: 7 },
-      { date: 'Fri', timeSpent: 2.8, lecturesCompleted: 4 },
-      { date: 'Sat', timeSpent: 1.2, lecturesCompleted: 2 },
-      { date: 'Sun', timeSpent: 0.5, lecturesCompleted: 1 },
-    ],
-    quizScores: [
-      { quizName: 'Quiz 1', score: 8, maxScore: 10 },
-      { quizName: 'Quiz 2', score: 15, maxScore: 20 },
-      { quizName: 'Quiz 3', score: 7, maxScore: 15 },
-      { quizName: 'Quiz 4', score: 18, maxScore: 20 },
-    ]
-  };
+    };
+    loadDashboard();
+  }, [user]);
   
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
@@ -74,11 +121,11 @@ const StudentDashboard: React.FC = () => {
               
               <TabsContent value="overview">
                 <ProgressDashboard 
-                  studentName={sampleData.studentName}
-                  overallProgress={sampleData.overallProgress}
-                  courseProgress={sampleData.courseProgress}
-                  learningData={sampleData.learningData}
-                  quizScores={sampleData.quizScores}
+                  studentName={studentName}
+                  overallProgress={overallProgress}
+                  courseProgress={courseProgress}
+                  learningData={learningData}
+                  quizScores={quizScores}
                 />
               </TabsContent>
               

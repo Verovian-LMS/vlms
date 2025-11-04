@@ -5,14 +5,14 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Trash2, ChevronDown, ChevronUp, Plus } from "lucide-react";
-import LectureItem from './LectureItem';
+import LessonItem from './LessonItem';
 
 interface ModuleItemProps {
   module: {
     id: string;
     title: string;
     description?: string;
-    lectures: {
+    lessons: {
       id: string;
       title: string;
       description?: string;
@@ -24,9 +24,9 @@ interface ModuleItemProps {
   index: number;
   updateModule: (index: number, data: any) => void;
   removeModule: (index: number) => void;
-  onAddLecture: (moduleIndex: number) => void;
-  onRemoveLecture: (moduleIndex: number, lectureIndex: number) => void;
-  onUpdateLecture: (moduleIndex: number, lectureIndex: number, data: any) => void;
+  onAddLesson: (moduleIndex: number) => void;
+  onRemoveLesson: (moduleIndex: number, lessonIndex: number) => void;
+  onUpdateLesson: (moduleIndex: number, lessonIndex: number, data: any) => void;
 }
 
 const ModuleItem: React.FC<ModuleItemProps> = ({
@@ -34,9 +34,9 @@ const ModuleItem: React.FC<ModuleItemProps> = ({
   index,
   updateModule,
   removeModule,
-  onAddLecture,
-  onRemoveLecture,
-  onUpdateLecture
+  onAddLesson,
+  onRemoveLesson,
+  onUpdateLesson
 }) => {
   const [expanded, setExpanded] = useState(true);
 
@@ -83,16 +83,16 @@ const ModuleItem: React.FC<ModuleItemProps> = ({
             </div>
 
             <div className="space-y-3 pt-2">
-              <h4 className="text-sm font-medium text-slate-700">Lectures</h4>
+              <h4 className="text-sm font-medium text-slate-700">Lessons</h4>
               
-              {module.lectures.map((lecture, lectureIndex) => (
-                <LectureItem
-                  key={lecture.id}
-                  lecture={lecture}
-                  index={lectureIndex}
+              {module.lessons.map((lesson, lessonIndex) => (
+                <LessonItem
+                  key={lesson.id}
+                  lesson={lesson}
+                  index={lessonIndex}
                   moduleIndex={index}
-                  updateLecture={(data) => onUpdateLecture(index, lectureIndex, data)}
-                  removeLecture={() => onRemoveLecture(index, lectureIndex)}
+                  updateLesson={(data) => onUpdateLesson(index, lessonIndex, data)}
+                  removeLesson={() => onRemoveLesson(index, lessonIndex)}
                 />
               ))}
 
@@ -100,9 +100,9 @@ const ModuleItem: React.FC<ModuleItemProps> = ({
                 variant="outline" 
                 size="sm" 
                 className="mt-2 w-full justify-center"
-                onClick={() => onAddLecture(index)}
+                onClick={() => onAddLesson(index)}
               >
-                <Plus size={16} className="mr-1" /> Add Lecture
+                <Plus size={16} className="mr-1" /> Add Lesson
               </Button>
             </div>
           </div>

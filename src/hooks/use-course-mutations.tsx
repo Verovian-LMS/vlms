@@ -1,7 +1,6 @@
 
-import { User } from '@supabase/supabase-js';
 import type { ToastAPI } from "@/types/ui";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/context/FastApiAuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useCourseImageUpload } from './use-course-image-upload';
 import { useCourseCreate } from './use-course-create';

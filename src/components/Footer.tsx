@@ -11,10 +11,10 @@ const Footer = () => {
           <div>
             <Link to="/" className="flex items-center space-x-2 mb-4">
               <GraduationCap className="w-8 h-8 text-medblue-400" />
-              <span className="text-xl font-bold text-white">MedMaster</span>
+              <span className="text-xl font-bold text-white">EduMaster</span>
             </Link>
             <p className="text-gray-400 mb-4">
-              Empowering medical education through interactive learning and cutting-edge technology.
+              Empowering education through interactive learning and cutting-edge technology.
             </p>
           </div>
           
@@ -23,7 +23,7 @@ const Footer = () => {
             <ul className="space-y-2">
               <li><Link to="/courses" className="text-gray-400 hover:text-white transition-colors">Courses</Link></li>
               <li><Link to="/resources" className="text-gray-400 hover:text-white transition-colors">Free Resources</Link></li>
-              <li><Link to="/blog" className="text-gray-400 hover:text-white transition-colors">Medical Blog</Link></li>
+              <li><Link to="/blog" className="text-gray-400 hover:text-white transition-colors">Educational Blog</Link></li>
               <li><Link to="/webinars" className="text-gray-400 hover:text-white transition-colors">Webinars</Link></li>
             </ul>
           </div>
@@ -50,7 +50,7 @@ const Footer = () => {
         
         <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
           <p className="text-gray-400 text-sm">
-            &copy; {new Date().getFullYear()} MedMaster. All rights reserved.
+            &copy; {new Date().getFullYear()} EduMaster. All rights reserved.
           </p>
           <div className="flex space-x-4 mt-4 md:mt-0">
             <a href="#" className="text-gray-400 hover:text-white">

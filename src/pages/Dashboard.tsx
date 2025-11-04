@@ -7,8 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/context/AuthContext";
+// Use FastAPI client for data fetching
+import { apiClient } from "@/lib/api/client";
+import { useAuth } from "@/context/FastApiAuthContext";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { BookOpen, FileText, Plus, Clock, Activity, CheckCircle } from "lucide-react";
@@ -18,39 +19,78 @@ const Dashboard = () => {
   const [enrollments, setEnrollments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [favorites, setFavorites] = useState([]);
+  const [weeklyLessonsCompleted, setWeeklyLessonsCompleted] = useState(0);
 
   useEffect(() => {
     const fetchUserData = async () => {
       if (!user) return;
 
       try {
-        // Fetch enrollments
-        const { data: enrollmentsData, error: enrollmentsError } = await supabase
-          .from('enrollments')
-          .select(`
-            id,
-            user_id,
-            course_id,
-            progress,
-            created_at,
-            updated_at,
-            courses(
-              id,
-              title,
-              image_url,
-              profiles(name, avatar)
-            )
-          `)
-          .eq('user_id', user.id)
-          .order('updated_at', { ascending: false })
-          .limit(5);
-        
-        if (enrollmentsError) throw enrollmentsError;
-        setEnrollments(enrollmentsData || []);
-        
-        // In a real app, we'd fetch favorites too
+        // Fetch "my courses" from FastAPI
+        const response = await apiClient.get<any[]>(`/api/v1/courses/my-courses`);
+
+        const courses = response.data || [];
+
+        // Map courses into the enrollment-like structure expected by the UI
+        const updatedEnrollments = await Promise.all(courses.slice(0, 5).map(async (course: any) => {
+          try {
+            const progressResponse = await apiClient.getCourseProgress(course.id);
+            return {
+              id: course.id,
+              user_id: user.id,
+              course_id: course.id,
+              progress: progressResponse.data?.progress ?? 0,
+              completed_lessons: progressResponse.data?.completed_lessons ?? 0,
+              total_lessons: progressResponse.data?.total_lessons ?? 0,
+              created_at: course.created_at,
+              updated_at: course.updated_at,
+              courses: {
+                id: course.id,
+                title: course.title,
+                image_url: course.image_url,
+                profiles: course.author ? { name: course.author.name, avatar: course.author.avatar } : undefined
+              }
+            };
+          } catch (err) {
+            console.error('Error fetching course progress:', err);
+            return {
+              id: course.id,
+              user_id: user.id,
+              course_id: course.id,
+              progress: 0,
+              completed_lessons: 0,
+              total_lessons: 0,
+              created_at: course.created_at,
+              updated_at: course.updated_at,
+              courses: {
+                id: course.id,
+                title: course.title,
+                image_url: course.image_url,
+                profiles: course.author ? { name: course.author.name, avatar: course.author.avatar } : undefined
+              }
+            };
+          }
+        }));
+
+        setEnrollments(updatedEnrollments);
         setFavorites([]);
-        
+
+        // Fetch recent activity and compute lessons completed in last 7 days
+        try {
+          const recent = await apiClient.getRecentActivity();
+          const items = recent.data || [];
+          const now = Date.now();
+          const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+          const count = items.filter((a: any) => {
+            const t = new Date(a.created_at).getTime();
+            const isRecent = now - t <= sevenDaysMs;
+            const isCompleted = typeof a.type === 'string' && a.type.toLowerCase().includes('completed');
+            return isRecent && isCompleted;
+          }).length;
+          setWeeklyLessonsCompleted(count);
+        } catch (e) {
+          setWeeklyLessonsCompleted(0);
+        }
       } catch (error) {
         console.error('Error fetching user data:', error);
       } finally {
@@ -193,6 +233,11 @@ const Dashboard = () => {
                           <span>{enrollment.progress}%</span>
                         </div>
                         <Progress value={enrollment.progress} className="h-2" />
+                        {enrollment.completed_lessons !== undefined && enrollment.total_lessons !== undefined && (
+                          <div className="text-xs text-gray-500 mt-1">
+                            {enrollment.completed_lessons} of {enrollment.total_lessons} lessons completed
+                          </div>
+                        )}
                       </div>
                       <div className="flex mt-auto">
                         <Link to={`/courses/${enrollment.courses.id}`} className="w-full">
@@ -249,11 +294,13 @@ const Dashboard = () => {
                       <Clock className="h-6 w-6 text-blue-600" />
                     </div>
                     <div>
-                      <h4 className="font-medium">10 Hours of Learning</h4>
-                      <p className="text-sm text-gray-500">Dedicate time to your education</p>
+                      <h4 className="font-medium">Lessons Completed This Week</h4>
+                      <p className="text-sm text-gray-500">Based on your recent activity</p>
                     </div>
                     <div className="ml-auto">
-                      <span className="px-2 py-1 bg-gray-100 text-gray-800 text-xs rounded-full">Locked</span>
+                      <span className={`px-2 py-1 text-xs rounded-full ${weeklyLessonsCompleted > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                        {weeklyLessonsCompleted}
+                      </span>
                     </div>
                   </div>
                 </div>

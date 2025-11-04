@@ -21,7 +21,7 @@ interface QuizQuestion {
 }
 
 interface QuizEmbedProps {
-  lectureId: string;
+  lessonId: string;
   title: string;
   description?: string;
   questions: QuizQuestion[];
@@ -29,7 +29,7 @@ interface QuizEmbedProps {
 }
 
 const QuizEmbed: React.FC<QuizEmbedProps> = ({
-  lectureId,
+  lessonId,
   title,
   description,
   questions,
@@ -101,7 +101,7 @@ const QuizEmbed: React.FC<QuizEmbedProps> = ({
     });
     
     // Here you would typically save the result to your backend
-    console.log(`Quiz completed for lecture ${lectureId} with score ${score}/${questions.length}`);
+    console.log(`Quiz completed for lesson ${lessonId} with score ${score}/${questions.length}`);
   };
   
   const resetQuiz = () => {

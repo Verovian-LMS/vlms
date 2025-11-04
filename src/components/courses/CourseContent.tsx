@@ -67,7 +67,7 @@ export const CourseContent: React.FC<CourseContentProps> = ({
             <Input
               value={req.text}
               onChange={(e) => updateRequirement(req.id, e.target.value)}
-              placeholder="e.g., Basic anatomy knowledge"
+              placeholder="e.g., Basic scientific knowledge"
             />
             <Button
               variant="ghost"
@@ -93,7 +93,7 @@ export const CourseContent: React.FC<CourseContentProps> = ({
             <Input
               value={point.text}
               onChange={(e) => updateLearningPoint(point.id, e.target.value)}
-              placeholder="e.g., Understand cardiovascular physiology"
+              placeholder="e.g., Understand scientific principles"
             />
             <Button
               variant="ghost"

@@ -1,13 +1,13 @@
 
 // Add new content types
-export type LectureContentType = 'video' | 'pdf' | 'slides' | 'document' | 'audio' | 'interactive' | 'downloadable';
+export type LessonContentType = 'video' | 'pdf' | 'slides' | 'document' | 'audio' | 'interactive' | 'downloadable';
 
-// Updated lecture type to include new content types
-export interface LectureUpload {
+// Updated lesson type to include new content types
+export interface LessonUpload {
   id: string;
   title: string;
   description?: string;
-  contentType?: LectureContentType;
+  contentType?: LessonContentType;
   videoUrl?: string | null;
   pdfUrl?: string | null;
   slidesUrl?: string | null;
@@ -19,10 +19,10 @@ export interface LectureUpload {
   notes?: string;
   uploadProgress?: number;
   uploadError?: string | null;
-  resources?: LectureResource[];
+  resources?: LessonResource[];
 }
 
-export interface LectureResource {
+export interface LessonResource {
   id: string;
   title: string;
   description?: string;
@@ -36,7 +36,7 @@ export interface CourseModule {
     id: string;
     title: string;
     description: string;
-    lectures: LectureUpload[];
+    lessons: LessonUpload[];
 }
 
 // Add missing types that were causing errors
@@ -63,7 +63,7 @@ export interface Course {
   created_at: string;
   updated_at: string;
   modules?: number;
-  lectures?: number;
+  lessons?: number;
 }
 
 export interface CourseType {
@@ -78,7 +78,7 @@ export interface CourseType {
   category?: string;
   level?: string;
   modules?: number;
-  lectures?: number;
+  lessons?: number;
   rating?: number;   // Add this line to fix the error
   reviews?: number;  // Add this for completeness
   author?: {
@@ -125,17 +125,17 @@ export type CourseFormValues = {
   }>;
 };
 
-// Ensure we have a proper type for the createNewLecture function in ModuleUtils.ts
+// Ensure we have a proper type for the createNewLesson function in ModuleUtils.ts
 export const createNewModule = (): CourseModule => {
   return {
     id: crypto.randomUUID(),
     title: "",
     description: "",
-    lectures: []
+    lessons: []
   };
 };
 
-export const createNewLecture = (): LectureUpload => {
+export const createNewLesson = (): LessonUpload => {
   return {
     id: crypto.randomUUID(),
     title: "",
@@ -152,7 +152,7 @@ export const validateModules = (modules: CourseModule[]): boolean => {
   return modules.length > 0 && 
     modules.every(module => 
       module.title.trim() !== '' && 
-      module.lectures.length > 0 && 
-      module.lectures.every(lecture => lecture.title.trim() !== '')
+      module.lessons.length > 0 && 
+      module.lessons.every(lesson => lesson.title.trim() !== '')
     );
 };

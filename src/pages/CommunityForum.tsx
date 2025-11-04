@@ -50,11 +50,11 @@ const CommunityForum = () => {
       authorRole: "Associate Professor",
       location: "Toronto, Canada",
       postedTime: "2 hours ago",
-      content: "I've been looking for innovative ways to teach respiratory examination techniques to first-year medical students. Traditional methods aren't engaging them well. Has anyone incorporated technology or simulation successfully?",
+      content: "I've been looking for innovative ways to teach examination techniques to first-year students. Traditional methods aren't engaging them well. Has anyone incorporated technology or simulation successfully?",
       likes: 24,
       comments: 8,
       views: 156,
-      tags: ["Teaching", "Clinical Skills", "Respiratory"]
+      tags: ["Teaching", "Practical Skills", "Learning Methods"]
     },
     {
       id: 2,
@@ -71,33 +71,33 @@ const CommunityForum = () => {
     },
     {
       id: 3,
-      title: "Managing physician burnout in high-stress settings",
+      title: "Managing professional burnout in high-stress settings",
       author: "Dr. Amara Okafor",
-      authorRole: "Emergency Physician",
+      authorRole: "Department Head",
       location: "Lagos, Nigeria",
       postedTime: "1 day ago",
-      content: "Burnout is becoming increasingly common among physicians in my hospital, especially in emergency medicine. What strategies have been effective in your institutions for recognizing and addressing burnout?",
+      content: "Burnout is becoming increasingly common among professionals in my organization, especially in high-pressure environments. What strategies have been effective in your institutions for recognizing and addressing burnout?",
       likes: 87,
       comments: 42,
       views: 523,
-      tags: ["Physician Wellness", "Burnout", "Healthcare Management"]
+      tags: ["Professional Wellness", "Burnout", "Management"]
     },
     {
       id: 4,
-      title: "Using AI for medical image analysis - ethical considerations",
+      title: "Using AI for data analysis - ethical considerations",
       author: "Dr. Hiroshi Tanaka",
-      authorRole: "Radiologist",
+      authorRole: "Data Scientist",
       location: "Tokyo, Japan",
       postedTime: "2 days ago",
-      content: "As AI becomes more prevalent in radiology, I'm concerned about some ethical implications. How are others addressing issues of algorithm bias, responsibility for missed diagnoses, and patient privacy?",
+      content: "As AI becomes more prevalent in data analysis, I'm concerned about some ethical implications. How are others addressing issues of algorithm bias, responsibility for incorrect analyses, and data privacy?",
       likes: 56,
       comments: 27,
       views: 349,
-      tags: ["AI", "Ethics", "Radiology", "Technology"]
+      tags: ["AI", "Ethics", "Data Science", "Technology"]
     }
   ];
   
-  const trendingTopics = ["Medical Education", "COVID-19 Research", "AI in Healthcare", "Physician Wellness", "Global Health Equity"];
+  const trendingTopics = ["Education", "Research Methods", "AI in Learning", "Professional Wellness", "Global Education Equity"];
   
   const DiscussionPost = ({ post }: { post: typeof discussionPosts[0] }) => (
     <Card className="mb-6">
@@ -168,7 +168,7 @@ const CommunityForum = () => {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           <div>
             <h1 className="text-3xl md:text-4xl font-bold mb-2">Global Community Forum</h1>
-            <p className="text-muted-foreground">Connect with medical professionals worldwide</p>
+            <p className="text-muted-foreground">Connect with educational professionals worldwide</p>
           </div>
           
           <div className="flex flex-col sm:flex-row gap-3">
@@ -183,7 +183,7 @@ const CommunityForum = () => {
                 <DialogHeader>
                   <DialogTitle>Create a New Discussion</DialogTitle>
                   <DialogDescription>
-                    Share your thoughts, questions, or insights with the medical community.
+                    Share your thoughts, questions, or insights with the educational community.
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 py-4">
@@ -304,7 +304,7 @@ const CommunityForum = () => {
                 </div>
                 <Separator className="my-2" />
                 <p className="text-xs text-muted-foreground">
-                  Join the conversation with medical professionals from around the world.
+                  Join the conversation with educational professionals from around the world.
                 </p>
               </CardContent>
             </Card>

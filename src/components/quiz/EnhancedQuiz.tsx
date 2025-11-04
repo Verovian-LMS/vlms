@@ -141,7 +141,7 @@ const EnhancedQuiz: React.FC<EnhancedQuizProps> = ({ onComplete }) => {
             </div>
           </CardContent>
           <CardFooter className="flex justify-center">
-            <Button onClick={() => window.location.reload()}>Return to Lecture</Button>
+            <Button onClick={() => window.location.reload()}>Return to Lesson</Button>
           </CardFooter>
         </Card>
       </motion.div>

@@ -13,16 +13,16 @@ This page documents the evolution of the MedMaster platform through its major re
 
 ### Features
 - **Courses**: Initial catalog of 50+ medical courses across specialties
-- **Video Lectures**: Custom video player with progress tracking
+- **Video Lessons**: Custom video player with progress tracking
 - **User Dashboard**: Personal learning hub
-- **Progress Tracking**: Course and lecture completion monitoring
+- **Progress Tracking**: Course and lesson completion monitoring
 - **Responsive Design**: Optimized for desktop, tablet, and mobile
 
 ## Version 1.1.0 (Aug 2023)
 
 ### New Features
 - **Webinars**: Live and recorded educational sessions
-- **Bookmarking**: Ability to bookmark important points in lectures
+- **Bookmarking**: Ability to bookmark important points in lessons
 - **Enhanced Video Controls**: Variable playback speed and volume controls
 - **Course Reviews**: Rating and review system for courses
 
@@ -40,8 +40,8 @@ This page documents the evolution of the MedMaster platform through its major re
 
 ### New Features
 - **Study Groups**: Collaborative learning spaces
-- **Notes System**: Take and organize notes while watching lectures
-- **Offline Access**: Download lectures for offline viewing
+- **Notes System**: Take and organize notes while watching lessons
+- **Offline Access**: Download lessons for offline viewing
 - **Interactive Assessments**: Quizzes and knowledge checks
 
 ### Improvements

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/context/FastApiAuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Form,
@@ -62,7 +62,7 @@ export const SignupForm: React.FC = () => {
       await signup(fullName, values.email, values.password, values.role);
       toast({
         title: "Account created successfully!",
-        description: "Welcome to MedMaster! You are now logged in."
+        description: "Welcome to EduMaster! You are now logged in."
       });
       navigate('/dashboard');
     } catch (error) {

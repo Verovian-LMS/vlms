@@ -16,4 +16,5 @@
 ## Additional Resources
 * [Glossary](glossary.md)
 * [Release Notes](release-notes.md)
+* [Handoff Notes](handoff.md)
 

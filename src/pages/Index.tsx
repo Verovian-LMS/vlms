@@ -40,7 +40,7 @@ const Index = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            Ready to Transform Your Medical Education?
+            Ready to Transform Your Learning Experience?
           </motion.h2>
           <motion.p 
             className="text-xl mb-8 text-blue-100 max-w-3xl mx-auto font-sans"
@@ -48,7 +48,7 @@ const Index = () => {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            Join thousands of medical students and professionals who've achieved their goals with MedMaster.
+            Join thousands of students and professionals who've achieved their goals with Verovian LMS.
           </motion.p>
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}

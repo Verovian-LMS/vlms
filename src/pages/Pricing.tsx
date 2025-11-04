@@ -11,9 +11,9 @@ const pricingPlans = [
   {
     name: "Basic",
     price: "Free",
-    description: "Essential tools for medical students just getting started",
+    description: "Essential tools for students just getting started",
     features: [
-      "Access to 10 free lectures",
+      "Access to 10 free lessons",
       "Basic quiz functionality",
       "Community forum access",
       "Mobile app access"
@@ -33,11 +33,11 @@ const pricingPlans = [
     name: "Premium",
     price: "$19.99",
     period: "per month",
-    description: "Everything you need for comprehensive medical exam preparation",
+    description: "Everything you need for comprehensive exam preparation",
     features: [
       "Full access to all courses",
       "Unlimited quizzes and practice tests",
-      "Downloadable lecture notes",
+      "Downloadable lesson notes",
       "Certificates of completion",
       "Priority support",
       "Offline viewing",
@@ -65,7 +65,7 @@ const pricingPlans = [
       "Mock interviews",
       "Career counseling",
       "Early access to new courses",
-      "Exclusive webinars with medical experts"
+      "Exclusive webinars with subject matter experts"
     ],
     notIncluded: [],
     cta: "Get Started",
@@ -178,7 +178,7 @@ const Pricing = () => {
                 Simple, Transparent Pricing
               </h1>
               <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-                Choose the plan that's right for your medical education journey
+                Choose the plan that's right for your educational journey
               </p>
               
               <div className="inline-flex items-center bg-white rounded-lg p-1 border border-slate-200 mb-8">
@@ -377,7 +377,7 @@ const Pricing = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              Ready to Transform Your Medical Education?
+              Ready to Transform Your Learning Experience?
             </motion.h2>
             <motion.p 
               className="text-xl mb-8 text-blue-100 max-w-3xl mx-auto"
@@ -385,7 +385,7 @@ const Pricing = () => {
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
-              Join thousands of medical students and professionals who've achieved their goals with MedMaster.
+              Join thousands of students and professionals who've achieved their goals with Verovian LMS.
             </motion.p>
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}

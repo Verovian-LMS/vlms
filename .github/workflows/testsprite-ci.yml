@@ -1,0 +1,166 @@
+name: TestSprite Comprehensive Testing
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+
+jobs:
+  testsprite-testing:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: learnify_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install frontend dependencies
+      run: npm ci
+
+    - name: Install backend dependencies
+      run: |
+        cd backend
+        pip install -r requirements.txt
+
+    - name: Setup test database
+      run: |
+        cd backend
+        python setup_postgresql.py
+      env:
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/learnify_test
+
+    - name: Start backend server
+      run: |
+        cd backend
+        python run.py &
+        sleep 10
+      env:
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/learnify_test
+        ENVIRONMENT: test
+
+    - name: Start frontend server
+      run: |
+        npm run dev &
+        sleep 15
+
+    - name: Wait for services
+      run: |
+        timeout 60 bash -c 'until curl -f http://localhost:8000/health; do sleep 2; done'
+        timeout 60 bash -c 'until curl -f http://localhost:5173; do sleep 2; done'
+
+    - name: Run TestSprite comprehensive tests
+      run: node run-testsprite.js
+      env:
+        TESTSPRITE_API_KEY: ${{ secrets.TESTSPRITE_API_KEY }}
+        CI: true
+
+    - name: Upload test reports
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: testsprite-reports
+        path: |
+          testsprite-report.json
+          testsprite-report.html
+          TESTSPRITE_ANALYSIS_REPORT.md
+
+    - name: Comment PR with test results
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          
+          try {
+            const report = JSON.parse(fs.readFileSync('testsprite-report.json', 'utf8'));
+            const passRate = report.summary.passRate;
+            const totalTests = report.summary.totalTests;
+            const passed = report.summary.passed;
+            const failed = report.summary.failed;
+            
+            const comment = `## 🧪 TestSprite Test Results
+            
+            **Overall Results:**
+            - 📊 Pass Rate: ${passRate}
+            - ✅ Passed: ${passed}/${totalTests}
+            - ❌ Failed: ${failed}
+            
+            **Test Suite Breakdown:**
+            ${Object.entries(report.suites).map(([suite, data]) => 
+              `- **${suite}**: ${data.passed}/${data.tests} passed (${Math.round(data.passed/data.tests*100)}%)`
+            ).join('\n')}
+            
+            ${failed > 0 ? '⚠️ **Action Required:** Some tests failed. Please review the detailed report.' : '🎉 **All tests passed!** Ready for merge.'}
+            
+            [View detailed report](${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID})`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+          } catch (error) {
+            console.log('Could not read test report:', error.message);
+          }
+
+    - name: Fail job if tests failed
+      run: |
+        if [ -f testsprite-report.json ]; then
+          FAILED=$(node -e "console.log(JSON.parse(require('fs').readFileSync('testsprite-report.json')).summary.failed)")
+          if [ "$FAILED" -gt "0" ]; then
+            echo "❌ $FAILED tests failed"
+            exit 1
+          fi
+        fi
+
+  security-scan:
+    runs-on: ubuntu-latest
+    needs: testsprite-testing
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Run security audit
+      run: |
+        npm audit --audit-level moderate
+        cd backend
+        pip install safety
+        safety check
+
+    - name: CodeQL Analysis
+      uses: github/codeql-action/init@v3
+      with:
+        languages: javascript, python
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v3

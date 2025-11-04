@@ -2,16 +2,16 @@
 import * as z from 'zod';
 
 export const courseCategories = [
-    'Medical Sciences',
-    'Clinical Skills',
-    'Anatomy',
-    'Physiology',
-    'Pathology',
-    'Pharmacology',
-    'Emergency Medicine',
-    'Surgery',
-    'Internal Medicine',
-    'Pediatrics',
+    'Natural Sciences',
+    'Applied Skills',
+    'Life Sciences',
+    'Mathematics',
+    'Engineering',
+    'Business',
+    'Technology',
+    'Social Sciences',
+    'Arts & Humanities',
+    'Languages',
     'Other'
 ] as const;
 
@@ -22,7 +22,7 @@ export const courseLevels = [
     'Expert'
 ] as const;
 
-export const lectureContentTypes = [
+export const lessonContentTypes = [
     'video',
     'pdf',
     'slides',
@@ -32,8 +32,8 @@ export const lectureContentTypes = [
     'downloadable'
 ] as const;
 
-// Define the lecture resource schema
-const LectureResourceSchema = z.object({
+// Define the lesson resource schema
+const LessonResourceSchema = z.object({
     id: z.string(),
     title: z.string().min(1, 'Resource title is required'),
     description: z.string().optional(),
@@ -43,12 +43,12 @@ const LectureResourceSchema = z.object({
     isDownloadable: z.boolean().default(true)
 });
 
-// Define the lecture schema with clearer validations and multiple content types
-const LectureSchema = z.object({
+// Define the lesson schema with clearer validations and multiple content types
+const LessonSchema = z.object({
     id: z.string(),
-    title: z.string().min(1, 'Lecture title is required'),
+    title: z.string().min(1, 'Lesson title is required'),
     description: z.string().default(""),
-    contentType: z.enum(lectureContentTypes).optional(),
+    contentType: z.enum(lessonContentTypes).optional(),
     videoUrl: z.string().nullable().optional(),
     pdfUrl: z.string().nullable().optional(),
     slidesUrl: z.string().nullable().optional(),
@@ -58,15 +58,15 @@ const LectureSchema = z.object({
     downloadableUrl: z.string().nullable().optional(),
     duration: z.number().default(0),
     notes: z.string().default(""),
-    resources: z.array(LectureResourceSchema).default([])
+    resources: z.array(LessonResourceSchema).default([])
 });
 
-// Define the module schema with lectures
+// Define the module schema with lessons
 const ModuleSchema = z.object({
     id: z.string(),
     title: z.string().min(1, 'Module title is required'),
     description: z.string().default(""),
-    lectures: z.array(LectureSchema).default([])
+    lessons: z.array(LessonSchema).default([])
 });
 
 // Update the CourseFormSchema to ensure all required fields are properly defined
@@ -91,4 +91,4 @@ export const courseFormSchema = CourseFormSchema;
 export const courseSchema = CourseFormSchema;
 
 export type CourseFormValues = z.infer<typeof CourseFormSchema>;
-export type LectureResourceValues = z.infer<typeof LectureResourceSchema>;
+export type LessonResourceValues = z.infer<typeof LessonResourceSchema>;

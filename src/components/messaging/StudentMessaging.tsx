@@ -1,8 +1,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/context/FastApiAuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +17,7 @@ import {
   MessageSquare, 
   Users
 } from "lucide-react";
+import apiClient from "@/lib/api/client";
 import { format } from "date-fns";
 
 type Contact = {
@@ -50,172 +50,50 @@ const StudentMessaging: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
 
-  // Fetch user's contacts
+  // Fetch user's contacts via FastAPI
   useEffect(() => {
     const fetchContacts = async () => {
-      if (!user?.id) return;
-
-      try {
-        setIsLoading(true);
-        
-        // Find all users the current user has exchanged messages with
-        const { data: sentMessages, error: sentError } = await supabase
-          .from('messages')
-          .select('recipient_id')
-          .eq('sender_id', user.id)
-          .order('created_at', { ascending: false });
-          
-        const { data: receivedMessages, error: receivedError } = await supabase
-          .from('messages')
-          .select('sender_id')
-          .eq('recipient_id', user.id)
-          .order('created_at', { ascending: false });
-          
-        if (sentError || receivedError) {
-          console.error('Error fetching messages:', sentError || receivedError);
-          return;
-        }
-        
-        // Get unique user IDs
-        const senderIds = receivedMessages?.map(msg => msg.sender_id) || [];
-        const recipientIds = sentMessages?.map(msg => msg.recipient_id) || [];
-        const uniqueUserIds = [...new Set([...senderIds, ...recipientIds])].filter(Boolean);
-        
-        if (uniqueUserIds.length === 0) {
-          setIsLoading(false);
-          return;
-        }
-        
-        // Fetch user profiles for these IDs
-        const { data: userProfiles, error: profilesError } = await supabase
-          .from('profiles')
-          .select('id, name, avatar')
-          .in('id', uniqueUserIds);
-          
-        if (profilesError) {
-          console.error('Error fetching user profiles:', profilesError);
-          return;
-        }
-        
-        // For each contact, get their last message and unread count
-        const contactsWithMeta = await Promise.all((userProfiles || []).map(async (profile) => {
-          // Get the last message between current user and this contact
-          const { data: lastMessageData, error: lastMessageError } = await supabase
-            .from('messages')
-            .select('content, created_at, is_read')
-            .or(`sender_id.eq.${user.id},recipient_id.eq.${user.id}`)
-            .or(`sender_id.eq.${profile.id},recipient_id.eq.${profile.id}`)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .single();
-            
-          // Get count of unread messages from this contact
-          const { count: unreadCount, error: countError } = await supabase
-            .from('messages')
-            .select('id', { count: 'exact', head: true })
-            .eq('sender_id', profile.id)
-            .eq('recipient_id', user.id)
-            .eq('is_read', false);
-            
-          if (lastMessageError || countError) {
-            console.error('Error fetching message metadata:', lastMessageError || countError);
-          }
-          
-          return {
-            id: profile.id,
-            name: profile.name || 'Unknown User',
-            avatar: profile.avatar || '',
-            last_message: lastMessageData?.content,
-            last_message_time: lastMessageData?.created_at,
-            unread_count: unreadCount || 0
-          };
-        }));
-        
-        // Sort contacts by last message time
-        contactsWithMeta.sort((a, b) => {
-          if (!a.last_message_time) return 1;
-          if (!b.last_message_time) return -1;
-          return new Date(b.last_message_time).getTime() - new Date(a.last_message_time).getTime();
-        });
-        
-        setContacts(contactsWithMeta);
-        
-        // If we have contacts, select the first one
-        if (contactsWithMeta.length > 0 && !selectedContact) {
-          setSelectedContact(contactsWithMeta[0]);
-        }
-      } catch (error) {
-        console.error('Error in fetchContacts:', error);
-      } finally {
+      if (!isAuthenticated) return;
+      setIsLoading(true);
+      const { data, error } = await apiClient.getContacts();
+      if (error) {
+        console.error('Error fetching contacts:', error);
+        toast({ title: 'Error', description: 'Failed to load contacts', variant: 'destructive' });
         setIsLoading(false);
+        return;
       }
+      const contacts = (data || []) as Contact[];
+      setContacts(contacts);
+      if (contacts.length > 0 && !selectedContact) {
+        setSelectedContact(contacts[0]);
+      }
+      setIsLoading(false);
     };
+    fetchContacts();
+  }, [isAuthenticated, selectedContact, toast]);
 
-    if (isAuthenticated) {
-      fetchContacts();
-    }
-  }, [user?.id, isAuthenticated, selectedContact]);
-
-  // Fetch messages when a contact is selected
+  // Fetch messages when a contact is selected via FastAPI
   useEffect(() => {
     const fetchMessages = async () => {
-      if (!user?.id || !selectedContact) return;
-      
-      try {
-        setIsLoading(true);
-        
-        const { data, error } = await supabase
-          .from('messages')
-          .select('*')
-          .or(`sender_id.eq.${user.id},recipient_id.eq.${user.id}`)
-          .or(`sender_id.eq.${selectedContact.id},recipient_id.eq.${selectedContact.id}`)
-          .order('created_at', { ascending: true });
-          
-        if (error) {
-          console.error('Error fetching messages:', error);
-          toast({
-            title: "Error",
-            description: "Failed to load messages",
-            variant: "destructive"
-          });
-          return;
-        }
-        
-        setMessages(data || []);
-        
-        // Mark messages as read
-        if (data) {
-          const unreadMessageIds = data
-            .filter(msg => msg.sender_id === selectedContact.id && !msg.is_read)
-            .map(msg => msg.id);
-            
-          if (unreadMessageIds.length > 0) {
-            await supabase
-              .from('messages')
-              .update({ is_read: true })
-              .in('id', unreadMessageIds);
-              
-            // Update unread count in contacts
-            setContacts(prevContacts => 
-              prevContacts.map(contact => 
-                contact.id === selectedContact.id
-                  ? { ...contact, unread_count: 0 }
-                  : contact
-              )
-            );
-          }
-        }
-      } catch (error) {
-        console.error('Error in fetchMessages:', error);
-      } finally {
+      if (!selectedContact) return;
+      setIsLoading(true);
+      const { data, error } = await apiClient.getConversation(selectedContact.id);
+      if (error) {
+        console.error('Error fetching messages:', error);
+        toast({ title: 'Error', description: 'Failed to load messages', variant: 'destructive' });
         setIsLoading(false);
+        return;
       }
+      const msgs = (data?.messages || []) as Message[];
+      setMessages(msgs);
+      // Mark messages as read
+      await apiClient.markRead(selectedContact.id);
+      // Update unread count in contacts
+      setContacts(prev => prev.map(c => c.id === selectedContact.id ? { ...c, unread_count: 0 } : c));
+      setIsLoading(false);
     };
-
-    if (selectedContact) {
-      fetchMessages();
-    }
-  }, [user?.id, selectedContact, toast]);
+    fetchMessages();
+  }, [selectedContact, toast]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -224,64 +102,29 @@ const StudentMessaging: React.FC = () => {
 
   const sendMessage = async () => {
     if (!isAuthenticated || !selectedContact || !newMessage.trim()) return;
-    
     setIsSending(true);
-    
-    try {
-      const { data, error } = await supabase
-        .from('messages')
-        .insert({
-          sender_id: user?.id,
-          recipient_id: selectedContact.id,
-          content: newMessage.trim(),
-          is_read: false
-        })
-        .select()
-        .single();
-        
-      if (error) {
-        console.error('Error sending message:', error);
-        toast({
-          title: "Error",
-          description: "Failed to send message",
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      // Add the new message to the list
-      if (data) {
-        setMessages(prevMessages => [...prevMessages, data]);
-        
-        // Update the contact's last message
-        setContacts(prevContacts => 
-          prevContacts.map(contact => 
-            contact.id === selectedContact.id
-              ? { 
-                  ...contact, 
-                  last_message: data.content,
-                  last_message_time: data.created_at
-                }
-              : contact
-          ).sort((a, b) => {
-            if (!a.last_message_time) return 1;
-            if (!b.last_message_time) return -1;
-            return new Date(b.last_message_time).getTime() - new Date(a.last_message_time).getTime();
-          })
-        );
-        
-        setNewMessage("");
-      }
-    } catch (error) {
-      console.error('Error in sendMessage:', error);
-      toast({
-        title: "Error",
-        description: "Something went wrong. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
+    const { data, error } = await apiClient.sendMessage(selectedContact.id, newMessage.trim());
+    if (error) {
+      console.error('Error sending message:', error);
+      toast({ title: 'Error', description: 'Failed to send message', variant: 'destructive' });
       setIsSending(false);
+      return;
     }
+    if (data) {
+      const msg = data as Message;
+      setMessages(prev => [...prev, msg]);
+      // Update contact last message and sort
+      setContacts(prev => prev
+        .map(c => c.id === selectedContact.id ? { ...c, last_message: msg.content, last_message_time: msg.created_at } : c)
+        .sort((a, b) => {
+          if (!a.last_message_time) return 1;
+          if (!b.last_message_time) return -1;
+          return new Date(b.last_message_time!).getTime() - new Date(a.last_message_time!).getTime();
+        })
+      );
+      setNewMessage('');
+    }
+    setIsSending(false);
   };
 
   const selectContact = (contact: Contact) => {

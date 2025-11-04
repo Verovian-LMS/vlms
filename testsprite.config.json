@@ -1,0 +1,241 @@
+{
+  "project": {
+    "name": "Learnify Med Skillz",
+    "description": "Medical education platform with course creation, video streaming, and interactive learning",
+    "version": "1.0.0",
+    "type": "fullstack",
+    "framework": {
+      "frontend": "React + TypeScript + Vite",
+      "backend": "FastAPI + Python",
+      "database": "PostgreSQL"
+    }
+  },
+  "testing": {
+    "environments": {
+      "development": {
+        "frontend_url": "http://localhost:5173",
+        "backend_url": "http://localhost:8000",
+        "database_url": "postgresql://localhost:5432/learnify_dev"
+      },
+      "staging": {
+        "frontend_url": "https://staging.learnify-med-skillz.com",
+        "backend_url": "https://api-staging.learnify-med-skillz.com",
+        "database_url": "${STAGING_DATABASE_URL}"
+      }
+    },
+    "test_types": {
+      "unit": {
+        "enabled": true,
+        "framework": "vitest",
+        "coverage_threshold": 80
+      },
+      "integration": {
+        "enabled": true,
+        "api_testing": true,
+        "database_testing": true
+      },
+      "e2e": {
+        "enabled": true,
+        "browser": "chromium",
+        "headless": true,
+        "viewport": {
+          "width": 1920,
+          "height": 1080
+        }
+      },
+      "performance": {
+        "enabled": true,
+        "load_testing": true,
+        "stress_testing": false
+      }
+    }
+  },
+  "test_scenarios": {
+    "critical_paths": [
+      {
+        "name": "User Authentication Flow",
+        "priority": "high",
+        "steps": [
+          "User registration",
+          "Email verification",
+          "Login process",
+          "Password reset",
+          "Profile management"
+        ]
+      },
+      {
+        "name": "Course Creation Flow",
+        "priority": "high",
+        "steps": [
+          "Course basics setup",
+          "Course details configuration",
+          "Module and lesson creation",
+          "Video upload and processing",
+          "Course settings configuration",
+          "Course preview and publish"
+        ]
+      },
+      {
+        "name": "Student Learning Experience",
+        "priority": "high",
+        "steps": [
+          "Course enrollment",
+          "Video playback",
+          "Progress tracking",
+          "Quiz completion",
+          "Certificate generation"
+        ]
+      },
+      {
+        "name": "Content Management",
+        "priority": "medium",
+        "steps": [
+          "File upload (images, videos, documents)",
+          "Content organization",
+          "Search functionality",
+          "Content filtering"
+        ]
+      }
+    ],
+    "api_endpoints": [
+      {
+        "group": "Authentication",
+        "endpoints": [
+          "POST /api/v1/auth/register",
+          "POST /api/v1/auth/login",
+          "POST /api/v1/auth/refresh",
+          "POST /api/v1/auth/logout",
+          "POST /api/v1/auth/reset-password"
+        ]
+      },
+      {
+        "group": "Courses",
+        "endpoints": [
+          "GET /api/v1/courses",
+          "POST /api/v1/courses",
+          "GET /api/v1/courses/{course_id}",
+          "PUT /api/v1/courses/{course_id}",
+          "DELETE /api/v1/courses/{course_id}",
+          "POST /api/v1/courses/{course_id}/publish"
+        ]
+      },
+      {
+        "group": "Modules & Lessons",
+        "endpoints": [
+          "GET /api/v1/courses/{course_id}/modules",
+          "POST /api/v1/courses/{course_id}/modules",
+          "GET /api/v1/modules/{module_id}/lessons",
+          "POST /api/v1/modules/{module_id}/lessons",
+          "PUT /api/v1/lessons/{lesson_id}",
+          "DELETE /api/v1/lessons/{lesson_id}"
+        ]
+      },
+      {
+        "group": "File Management",
+        "endpoints": [
+          "POST /api/v1/upload/image",
+          "POST /api/v1/upload/video",
+          "POST /api/v1/upload/document",
+          "GET /api/v1/files/{file_id}",
+          "DELETE /api/v1/files/{file_id}"
+        ]
+      }
+    ]
+  },
+  "test_data": {
+    "users": {
+      "instructor": {
+        "email": "instructor@testsprite.com",
+        "password": "TestSprite123!",
+        "role": "instructor",
+        "profile": {
+          "first_name": "Test",
+          "last_name": "Instructor",
+          "bio": "Test instructor for automated testing"
+        }
+      },
+      "student": {
+        "email": "student@testsprite.com",
+        "password": "TestSprite123!",
+        "role": "student",
+        "profile": {
+          "first_name": "Test",
+          "last_name": "Student"
+        }
+      }
+    },
+    "courses": {
+      "sample_course": {
+        "title": "TestSprite Medical Course",
+        "description": "Automated test course for medical education",
+        "category": "Medical",
+        "level": "Beginner",
+        "modules": [
+          {
+            "title": "Introduction to Medical Basics",
+            "description": "Basic medical concepts",
+            "lessons": [
+              {
+                "title": "Medical Terminology",
+                "type": "video",
+                "duration": 300
+              },
+              {
+                "title": "Anatomy Overview",
+                "type": "text",
+                "content": "Basic anatomy concepts"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "monitoring": {
+    "scheduled_tests": {
+      "smoke_tests": {
+        "frequency": "hourly",
+        "enabled": true
+      },
+      "regression_tests": {
+        "frequency": "daily",
+        "enabled": true
+      },
+      "performance_tests": {
+        "frequency": "weekly",
+        "enabled": false
+      }
+    },
+    "alerts": {
+      "email": ["dev-team@learnify-med-skillz.com"],
+      "slack_webhook": "${SLACK_WEBHOOK_URL}",
+      "failure_threshold": 2
+    }
+  },
+  "reporting": {
+    "formats": ["json", "html", "junit"],
+    "include_screenshots": true,
+    "include_videos": true,
+    "include_logs": true,
+    "retention_days": 30
+  },
+  "integrations": {
+    "ci_cd": {
+      "github_actions": true,
+      "pre_commit_hooks": true,
+      "post_deploy_tests": true
+    },
+    "tools": {
+      "vitest": {
+        "enabled": true,
+        "config_path": "./vitest.config.ts"
+      },
+      "playwright": {
+        "enabled": false
+      },
+      "cypress": {
+        "enabled": false
+      }
+    }
+  }
+}

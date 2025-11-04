@@ -3,6 +3,14 @@ import { useState, useEffect } from 'react';
 import { useToast } from './use-toast';
 import { isBucketAccessible, areAllBucketsAccessible } from "@/utils/initializeStorage";
 
+const API_BASE_URL = 'http://localhost:8000';
+const getAuthHeaders = (): HeadersInit => {
+  const token = localStorage.getItem('auth_token') || localStorage.getItem('access_token');
+  const headers: HeadersInit = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  return headers;
+};
+
 export const useStorageInitialization = () => {
   const [storageInitialized, setStorageInitialized] = useState(false);
   const [storageChecked, setStorageChecked] = useState(false);
@@ -15,7 +23,7 @@ export const useStorageInitialization = () => {
       try {
         console.log('Initializing storage...');
         
-        // First attempt
+        // First attempt using FastAPI storage status
         const allAccessible = await areAllBucketsAccessible();
         
         if (!isMounted) return;

@@ -13,10 +13,10 @@ import { Link } from "react-router-dom";
 interface Bookmark {
   id: string;
   courseId: string;
-  lectureId: string;
+  lessonId: string;
   timestamp: number;
   courseName: string;
-  lectureName: string;
+  lessonName: string;
   addedAt: Date;
   thumbnailUrl: string;
 }
@@ -36,30 +36,30 @@ const Bookmarks = () => {
 
   useEffect(() => {
     // Simulate fetching bookmarks from localStorage or API
-    const fetchBookmarks = () => {
+    const fetchBookmarks = async () => {
       setIsLoading(true);
       
       // In a real app, you would fetch this data from an API or localStorage
-      setTimeout(() => {
+      setTimeout(async () => {
         // Mock data
         const mockBookmarks: Bookmark[] = [
           {
             id: "bm1",
             courseId: "course-123",
-            lectureId: "lec-456",
+            lessonId: "les-456",
             timestamp: 325, // 5:25
             courseName: "Cardiovascular System",
-            lectureName: "Heart Anatomy",
+            lessonName: "Scientific Fundamentals",
             addedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
             thumbnailUrl: "/placeholder.svg"
           },
           {
             id: "bm2",
             courseId: "course-789",
-            lectureId: "lec-012",
+            lessonId: "les-012",
             timestamp: 732, // 12:12
-            courseName: "Neuroanatomy",
-            lectureName: "Brain Structure and Function",
+            courseName: "Life Sciences",
+            lessonName: "Brain Structure and Function",
             addedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
             thumbnailUrl: "/placeholder.svg"
           }
@@ -75,7 +75,7 @@ const Bookmarks = () => {
           },
           {
             courseId: "course-789",
-            courseName: "Neuroanatomy",
+            courseName: "Life Sciences",
             progress: 30,
             lastAccessed: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
             thumbnailUrl: "/placeholder.svg"
@@ -89,8 +89,29 @@ const Bookmarks = () => {
           }
         ];
         
+        // Fetch accurate progress for each course using our new API endpoint
+        const updatedProgress = await Promise.all(mockProgress.map(async (course) => {
+          try {
+            const { apiClient } = await import('@/lib/api/client');
+            const progressResponse = await apiClient.getCourseProgress(course.courseId);
+            
+            if (progressResponse.data && progressResponse.data.progress !== undefined) {
+              return {
+                ...course,
+                progress: progressResponse.data.progress,
+                completed_lessons: progressResponse.data.completed_lessons,
+                total_lessons: progressResponse.data.total_lessons
+              };
+            }
+            return course;
+          } catch (err) {
+            console.error('Error fetching course progress:', err);
+            return course;
+          }
+        }));
+        
         setBookmarks(mockBookmarks);
-        setInProgress(mockProgress);
+        setInProgress(updatedProgress);
         setIsLoading(false);
       }, 800);
     };
@@ -177,6 +198,11 @@ const Bookmarks = () => {
                                   style={{ width: `${course.progress}%` }}
                                 ></div>
                               </div>
+                              {course.completed_lessons !== undefined && course.total_lessons !== undefined && (
+                                <div className="text-xs text-gray-500 mt-1">
+                                  {course.completed_lessons} of {course.total_lessons} lessons completed
+                                </div>
+                              )}
                             </div>
                             <div className="text-sm text-gray-500">
                               <Clock className="w-4 h-4 inline mr-1" />
@@ -242,7 +268,7 @@ const Bookmarks = () => {
                               </div>
                             </div>
                             <div className="flex-1">
-                              <h3 className="font-medium text-lg mb-1 font-heading">{bookmark.lectureName}</h3>
+                              <h3 className="font-medium text-lg mb-1 font-heading">{bookmark.lessonName}</h3>
                               <p className="text-sm text-gray-500">{bookmark.courseName}</p>
                               <div className="text-xs text-gray-400 mt-1">
                                 <BookmarkIcon className="w-3 h-3 inline mr-1" />
@@ -251,7 +277,7 @@ const Bookmarks = () => {
                             </div>
                             <div className="flex items-center">
                               <Button asChild size="sm">
-                                <Link to={`/courses/${bookmark.courseId}/lecture/${bookmark.lectureId}?t=${bookmark.timestamp}`}>
+                                <Link to={`/courses/${bookmark.courseId}/lesson/${bookmark.lessonId}?t=${bookmark.timestamp}`}>
                                   <Play className="mr-1 h-3 w-3" /> Watch
                                 </Link>
                               </Button>
@@ -264,7 +290,7 @@ const Bookmarks = () => {
                         <BookmarkIcon className="w-16 h-16 mx-auto text-gray-300 mb-4" />
                         <h3 className="text-xl font-bold text-gray-700 mb-2 font-heading">No bookmarks yet</h3>
                         <p className="text-gray-500 mb-6 max-w-md mx-auto">
-                          Bookmark important moments in lectures to quickly reference them later
+                          Bookmark important moments in lessons to quickly reference them later
                         </p>
                         <Button asChild>
                           <Link to="/">Browse Courses</Link>

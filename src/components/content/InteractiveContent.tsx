@@ -7,13 +7,13 @@ import { useToast } from '@/hooks/use-toast';
 
 interface InteractiveContentProps {
   src: string;
-  lectureId: string;
+  lessonId: string;
   title: string;
 }
 
 const InteractiveContent: React.FC<InteractiveContentProps> = ({
   src,
-  lectureId,
+  lessonId,
   title
 }) => {
   const [isLoading, setIsLoading] = useState(true);
@@ -24,13 +24,13 @@ const InteractiveContent: React.FC<InteractiveContentProps> = ({
   useEffect(() => {
     const trackProgress = () => {
       // This would be connected to your progress tracking system
-      console.log(`User interacting with interactive content: ${lectureId}`);
+      console.log(`User interacting with interactive content: ${lessonId}`);
     };
     
     const interval = setInterval(trackProgress, 30000); // Check every 30 seconds
     
     return () => clearInterval(interval);
-  }, [lectureId]);
+  }, [lessonId]);
   
   const handleLoad = () => {
     setIsLoading(false);

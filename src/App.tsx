@@ -1,8 +1,9 @@
 
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { Toaster } from "react-hot-toast";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { AuthProvider } from "./context/AuthContext";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as SonnerToaster } from "@/components/ui/sonner";
+import { FastApiAuthProvider } from "./context/FastApiAuthContext";
 import Index from "./pages/Index";
 import About from "./pages/About";
 import Login from "./pages/Login";
@@ -17,16 +18,17 @@ import CourseUpload from "./pages/CourseUpload";
 import CourseEditor from "./pages/CourseEditor";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
+import Contact from "./pages/Contact";
 import Pricing from "./pages/Pricing";
-import VirtualPatient from "./pages/VirtualPatient";
+import StudentDashboard from "./pages/StudentDashboard";
 import Webinars from "./pages/Webinars";
-import EhrIntegration from "./pages/EhrIntegration";
 import CommunityForum from "./pages/CommunityForum";
 import Bookmarks from "./pages/Bookmarks";
 import Demo from "./pages/Demo";
-import LecturePage from "./pages/LecturePage";
+import LessonPage from "./pages/LessonPage";
 import QuizPage from "./pages/QuizPage";
-import { Toaster as SonnerToaster } from "@/components/ui/sonner"
+import CourseBuilder from "./pages/CourseBuilder";
+import EnhancedCourseCreation from "./pages/EnhancedCourseCreation";
 import "./App.css";
 
 // Create a new QueryClient instance
@@ -36,7 +38,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <Router>
-        <AuthProvider>
+        <FastApiAuthProvider>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/about" element={<About />} />
@@ -47,16 +49,17 @@ function App() {
             <Route path="/ai-tutor" element={<AiTutor />} />
             <Route path="/courses" element={<Courses />} />
             <Route path="/courses/:courseId" element={<CourseDetail />} />
-            <Route path="/courses/:courseId/lecture/:lectureId" element={<LecturePage />} />
+            <Route path="/courses/:courseId/lesson/:lessonId" element={<LessonPage />} />
             <Route path="/course-upload" element={<CourseUpload />} />
             <Route path="/course-editor/:courseId" element={<CourseEditor />} />
+            <Route path="/course-builder/:courseId" element={<CourseBuilder />} />
+            <Route path="/enhanced-course-creation" element={<EnhancedCourseCreation />} />
+            <Route path="/enhanced-course-creation/:courseId" element={<EnhancedCourseCreation />} />
             <Route path="/quiz/:quizId" element={<QuizPage />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/pricing" element={<Pricing />} />
-            <Route path="/virtual-patient" element={<VirtualPatient />} />
             <Route path="/webinars" element={<Webinars />} />
-            <Route path="/ehr-integration" element={<EhrIntegration />} />
             <Route path="/community" element={<CommunityForum />} />
             <Route path="/bookmarks" element={<Bookmarks />} />
             <Route path="/demo" element={<Demo />} />
@@ -64,7 +67,7 @@ function App() {
           </Routes>
           <Toaster />
           <SonnerToaster />
-        </AuthProvider>
+        </FastApiAuthProvider>
       </Router>
     </QueryClientProvider>
   );

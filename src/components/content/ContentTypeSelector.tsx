@@ -11,16 +11,16 @@ import {
   Check
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { LectureContentType } from '@/types/course';
+import { LessonContentType } from '@/types/course';
 
 interface ContentTypeSelectorProps {
-  selectedType: LectureContentType;
-  onChange: (type: LectureContentType) => void;
+  selectedType: LessonContentType;
+  onChange: (type: LessonContentType) => void;
   className?: string;
 }
 
 interface ContentTypeOption {
-  type: LectureContentType;
+  type: LessonContentType;
   label: string;
   icon: React.ReactNode;
   description: string;
@@ -36,7 +36,7 @@ const ContentTypeSelector: React.FC<ContentTypeSelectorProps> = ({
       type: 'video',
       label: 'Video',
       icon: <Video className="h-5 w-5" />,
-      description: 'Upload video lectures'
+      description: 'Upload video lessons'
     },
     {
       type: 'pdf',

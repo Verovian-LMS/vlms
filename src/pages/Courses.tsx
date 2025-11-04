@@ -9,7 +9,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Search, Filter, BookOpen, BadgeCheck, Clock, Star } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import { useCourses } from "@/hooks/use-courses";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/context/FastApiAuthContext";
 import { CourseType } from "@/types/course";
 import { CourseCard } from "@/components/courses/CourseCard";
 import { FeaturedCourseCard } from "@/components/courses/FeaturedCourseCard";
@@ -22,13 +22,16 @@ const CoursesPage = () => {
   const [activeCategory, setActiveCategory] = useState("all");
 
   const categories = [
-    { id: "all", name: "All Courses" },
-    { id: "anatomy", name: "Anatomy" },
-    { id: "physiology", name: "Physiology" },
-    { id: "pathology", name: "Pathology" },
-    { id: "pharmacology", name: "Pharmacology" },
-    { id: "clinical", name: "Clinical Skills" },
-    { id: "other", name: "Other" },
+    { id: "all", name: "All Categories" },
+    { id: "natural-sciences", name: "Natural Sciences" },
+    { id: "applied-skills", name: "Applied Skills" },
+    { id: "life-sciences", name: "Life Sciences" },
+    { id: "mathematics", name: "Mathematics" },
+    { id: "engineering", name: "Engineering" },
+    { id: "business", name: "Business" },
+    { id: "technology", name: "Technology" },
+    { id: "social-sciences", name: "Social Sciences" },
+    { id: "arts-humanities", name: "Arts & Humanities" },
   ];
 
   // Refresh course list on component mount
@@ -77,8 +80,7 @@ const CoursesPage = () => {
         >
           <h1 className="text-3xl font-bold text-gray-900 mb-2 font-nunito-sans">Explore Courses</h1>
           <p className="text-gray-600 max-w-3xl font-exo2">
-            Discover our comprehensive library of medical courses designed for students, 
-            residents, and healthcare professionals at all levels of training.
+            Discover our comprehensive library of courses designed for students, professionals, and learners at all levels of training.
           </p>
           
           <div className="mt-6 flex flex-col md:flex-row gap-4">

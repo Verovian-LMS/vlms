@@ -24,10 +24,10 @@ const Demo = () => {
               className="text-center mb-12"
             >
               <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-                Experience MedMaster in Action
+                Experience Verovian LMS in Action
               </h1>
               <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                See how our interactive learning platform can transform your medical education
+                See how our interactive learning platform can transform your educational experience
               </p>
             </motion.div>
             
@@ -40,7 +40,7 @@ const Demo = () => {
               <div className="aspect-video w-full bg-white rounded-xl overflow-hidden shadow-lg border border-slate-100">
                 <VideoPlayer 
                   src="" 
-                  title="MedMaster Platform Demo"
+                  title="Verovian LMS Platform Demo"
                 />
               </div>
             </motion.div>
@@ -58,7 +58,7 @@ const Demo = () => {
             >
               <h2 className="text-3xl font-bold text-gray-900 mb-4">Experience Our Key Features</h2>
               <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                See why thousands of medical students choose MedMaster for their education
+                See why thousands of students choose Verovian LMS for their education
               </p>
             </motion.div>
             
@@ -77,9 +77,9 @@ const Demo = () => {
                     </div>
                   </div>
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Interactive Video Lectures</h3>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Interactive Video Lessons</h3>
                 <p className="text-gray-600 mb-4">
-                  Our engaging video lectures break down complex medical concepts with clear explanations, animations, and clinical correlations.
+                  Our engaging video lessons break down complex concepts with clear explanations, animations, and practical correlations.
                 </p>
                 <ul className="space-y-2 mb-6">
                   <li className="flex items-center">
@@ -152,7 +152,7 @@ const Demo = () => {
                 <ul className="space-y-2 mb-6">
                   <li className="flex items-center">
                     <Check className="h-5 w-5 text-green-500 mr-2" />
-                    <span>USMLE and NCLEX style questions</span>
+                    <span>Standardized exam style questions</span>
                   </li>
                   <li className="flex items-center">
                     <Check className="h-5 w-5 text-green-500 mr-2" />
@@ -260,10 +260,10 @@ const Demo = () => {
                   />
                 </div>
                 <p className="text-xl text-gray-600 italic mb-6">
-                  "MedMaster transformed my study habits and helped me score in the 95th percentile on my USMLE Step 1. The integrated approach of videos, quizzes, and flashcards was exactly what I needed to master complex medical concepts."
+                  "Verovian LMS transformed my study habits and helped me excel in my exams. The integrated approach of videos, quizzes, and flashcards was exactly what I needed to master complex concepts."
                 </p>
                 <h3 className="font-bold text-gray-900 mb-1">Dr. Michael Chen</h3>
-                <p className="text-gray-600">Medical Resident, UCLA</p>
+                <p className="text-gray-600">Graduate Student, UCLA</p>
               </div>
             </motion.div>
           </div>
@@ -278,7 +278,7 @@ const Demo = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              Ready to Transform Your Medical Education?
+              Ready to Transform Your Learning Experience?
             </motion.h2>
             <motion.p 
               className="text-xl mb-8 text-blue-100 max-w-3xl mx-auto"
@@ -286,7 +286,7 @@ const Demo = () => {
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
-              Join thousands of medical students and professionals who've achieved their goals with MedMaster.
+              Join thousands of students and professionals who've achieved their goals with Verovian LMS.
             </motion.p>
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}

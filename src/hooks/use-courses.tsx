@@ -1,7 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/context/FastApiAuthContext';
 import { useToast } from './use-toast';
 import { useCoursesQuery } from './use-courses-query';
 import { useCourseMutations } from './use-course-mutations';

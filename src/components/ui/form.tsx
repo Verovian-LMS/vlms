@@ -65,8 +65,18 @@ const useFormField = () => {
     throw new Error("useFormField should be used within <FormField>");
   }
   
-  const { getFieldState, formState } = useFormContext();
-  
+  // Safely access form context to prevent blank UI on remounts
+  let getFieldState: any = () => ({});
+  let formState: any = {};
+  try {
+    const ctx = useFormContext();
+    getFieldState = ctx?.getFieldState || getFieldState;
+    formState = ctx?.formState || formState;
+  } catch (err) {
+    // When used outside of a provider, degrade gracefully
+    console.warn("useFormContext unavailable; rendering form field without context.");
+  }
+
   // Safely get field state with error handling
   let fieldState;
   try {

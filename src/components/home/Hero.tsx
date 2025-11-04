@@ -17,10 +17,10 @@ const Hero = () => {
             transition={{ duration: 0.5 }}
           >
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 leading-tight">
-              Master Medicine with <span className="text-medblue-600">Interactive</span> Learning
+              Master Learning with <span className="text-medblue-600">Interactive</span> Learning
             </h1>
             <p className="text-lg text-gray-700 md:text-xl max-w-xl">
-              High-yield video lectures, interactive quizzes, and AI-powered flashcards to help you ace your medical exams.
+              High-yield video lessons, interactive quizzes, and AI-powered flashcards to help you ace your exams.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <Button 

@@ -1,0 +1,358 @@
+{
+  "summary": {
+    "projectName": "Learnify Med Skillz",
+    "timestamp": "2025-11-03T14:04:11.742Z",
+    "duration": 126095,
+    "totalTests": 53,
+    "passed": 49,
+    "failed": 4,
+    "passRate": "92.5%"
+  },
+  "suites": {
+    "course-creation-flow": {
+      "tests": 8,
+      "passed": 8,
+      "failed": 0,
+      "details": [
+        {
+          "name": "Instructor login and dashboard access",
+          "status": "passed",
+          "duration": 2000
+        },
+        {
+          "name": "Course basics form validation",
+          "status": "passed",
+          "duration": 1500
+        },
+        {
+          "name": "Course details rich text editor",
+          "status": "passed",
+          "duration": 2500
+        },
+        {
+          "name": "Module and lesson creation",
+          "status": "passed",
+          "duration": 3000
+        },
+        {
+          "name": "Video upload and processing",
+          "status": "passed",
+          "duration": 4000
+        },
+        {
+          "name": "Course settings configuration",
+          "status": "passed",
+          "duration": 1800
+        },
+        {
+          "name": "Course preview functionality",
+          "status": "passed",
+          "duration": 2200
+        },
+        {
+          "name": "Course publication workflow",
+          "status": "passed",
+          "duration": 2000
+        }
+      ],
+      "duration": 19044,
+      "status": "passed"
+    },
+    "student-learning-journey": {
+      "tests": 8,
+      "passed": 6,
+      "failed": 2,
+      "details": [
+        {
+          "name": "Student registration and verification",
+          "status": "passed",
+          "duration": 2500
+        },
+        {
+          "name": "Course catalog browsing and search",
+          "status": "passed",
+          "duration": 1800
+        },
+        {
+          "name": "Course enrollment process",
+          "status": "passed",
+          "duration": 2000
+        },
+        {
+          "name": "Video lesson playback and controls",
+          "status": "passed",
+          "duration": 3500
+        },
+        {
+          "name": "Progress tracking accuracy",
+          "status": "passed",
+          "duration": 2200
+        },
+        {
+          "name": "Interactive content engagement",
+          "status": "failed",
+          "duration": 2800
+        },
+        {
+          "name": "Assessment completion",
+          "status": "failed",
+          "duration": 3000
+        },
+        {
+          "name": "Certificate generation",
+          "status": "passed",
+          "duration": 2500
+        }
+      ],
+      "duration": 20360,
+      "status": "failed"
+    },
+    "authentication-api": {
+      "tests": 8,
+      "passed": 8,
+      "failed": 0,
+      "details": [
+        {
+          "name": "POST /api/v1/auth/register - valid data",
+          "status": "passed",
+          "duration": 800
+        },
+        {
+          "name": "POST /api/v1/auth/register - duplicate email",
+          "status": "passed",
+          "duration": 600
+        },
+        {
+          "name": "POST /api/v1/auth/register - invalid email format",
+          "status": "passed",
+          "duration": 500
+        },
+        {
+          "name": "POST /api/v1/auth/login - valid credentials",
+          "status": "passed",
+          "duration": 700
+        },
+        {
+          "name": "POST /api/v1/auth/login - invalid credentials",
+          "status": "passed",
+          "duration": 800
+        },
+        {
+          "name": "POST /api/v1/auth/refresh - valid token",
+          "status": "passed",
+          "duration": 400
+        },
+        {
+          "name": "POST /api/v1/auth/refresh - expired token",
+          "status": "passed",
+          "duration": 500
+        },
+        {
+          "name": "POST /api/v1/auth/logout - successful logout",
+          "status": "passed",
+          "duration": 300
+        }
+      ],
+      "duration": 4673,
+      "status": "passed"
+    },
+    "course-management-api": {
+      "tests": 7,
+      "passed": 6,
+      "failed": 1,
+      "details": [
+        {
+          "name": "GET /api/v1/courses - list all courses",
+          "status": "failed",
+          "duration": 600
+        },
+        {
+          "name": "GET /api/v1/courses - pagination handling",
+          "status": "passed",
+          "duration": 800
+        },
+        {
+          "name": "GET /api/v1/courses - filtering and search",
+          "status": "passed",
+          "duration": 900
+        },
+        {
+          "name": "POST /api/v1/courses - create course",
+          "status": "passed",
+          "duration": 1200
+        },
+        {
+          "name": "GET /api/v1/courses/{id} - get course details",
+          "status": "passed",
+          "duration": 500
+        },
+        {
+          "name": "PUT /api/v1/courses/{id} - update course",
+          "status": "passed",
+          "duration": 1000
+        },
+        {
+          "name": "DELETE /api/v1/courses/{id} - delete course",
+          "status": "passed",
+          "duration": 700
+        }
+      ],
+      "duration": 5772,
+      "status": "failed"
+    },
+    "ui-components": {
+      "tests": 8,
+      "passed": 7,
+      "failed": 1,
+      "details": [
+        {
+          "name": "EnhancedCourseCreationFlow rendering",
+          "status": "passed",
+          "duration": 1200
+        },
+        {
+          "name": "CourseBasicsStep form validation",
+          "status": "passed",
+          "duration": 1000
+        },
+        {
+          "name": "CourseDetailsStep rich text editor",
+          "status": "passed",
+          "duration": 1500
+        },
+        {
+          "name": "EnhancedModulesStep drag and drop",
+          "status": "passed",
+          "duration": 1800
+        },
+        {
+          "name": "VideoPlayer component functionality",
+          "status": "passed",
+          "duration": 2000
+        },
+        {
+          "name": "Navigation and routing",
+          "status": "passed",
+          "duration": 1300
+        },
+        {
+          "name": "Responsive design validation",
+          "status": "passed",
+          "duration": 1600
+        },
+        {
+          "name": "Accessibility compliance",
+          "status": "failed",
+          "duration": 1400
+        }
+      ],
+      "duration": 11839,
+      "status": "failed"
+    },
+    "performance-load": {
+      "tests": 6,
+      "passed": 6,
+      "failed": 0,
+      "details": [
+        {
+          "name": "Page load time < 3 seconds",
+          "status": "passed",
+          "duration": 5000
+        },
+        {
+          "name": "API response time < 500ms",
+          "status": "passed",
+          "duration": 3000
+        },
+        {
+          "name": "Video streaming performance",
+          "status": "passed",
+          "duration": 8000
+        },
+        {
+          "name": "50 concurrent users simulation",
+          "status": "passed",
+          "duration": 12000
+        },
+        {
+          "name": "Large file upload handling",
+          "status": "passed",
+          "duration": 15000
+        },
+        {
+          "name": "Database query optimization",
+          "status": "passed",
+          "duration": 4000
+        }
+      ],
+      "duration": 47051,
+      "status": "passed"
+    },
+    "security-validation": {
+      "tests": 8,
+      "passed": 8,
+      "failed": 0,
+      "details": [
+        {
+          "name": "SQL injection prevention",
+          "status": "passed",
+          "duration": 2000
+        },
+        {
+          "name": "XSS attack prevention",
+          "status": "passed",
+          "duration": 1800
+        },
+        {
+          "name": "CSRF protection validation",
+          "status": "passed",
+          "duration": 1500
+        },
+        {
+          "name": "Authentication bypass attempts",
+          "status": "passed",
+          "duration": 2500
+        },
+        {
+          "name": "File upload security",
+          "status": "passed",
+          "duration": 2200
+        },
+        {
+          "name": "API rate limiting",
+          "status": "passed",
+          "duration": 1600
+        },
+        {
+          "name": "Data encryption validation",
+          "status": "passed",
+          "duration": 1900
+        },
+        {
+          "name": "Session management security",
+          "status": "passed",
+          "duration": 1700
+        }
+      ],
+      "duration": 15268,
+      "status": "passed"
+    }
+  },
+  "recommendations": [
+    {
+      "type": "bug_fixes",
+      "priority": "high",
+      "message": "4 tests failed and require immediate attention"
+    },
+    {
+      "type": "quality_improvement",
+      "priority": "medium",
+      "message": "Test pass rate is 92.5%. Consider improving test coverage and fixing flaky tests"
+    },
+    {
+      "type": "monitoring",
+      "priority": "low",
+      "message": "Set up continuous monitoring with TestSprite to catch regressions early"
+    }
+  ]
+}

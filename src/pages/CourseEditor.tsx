@@ -5,9 +5,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CourseFormValues, courseSchema } from "@/lib/validations/course";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/context/AuthContext";
+import { apiClient } from "@/lib/api/client";
+import { useCourseImageUpload } from "@/hooks/use-course-image-upload";
+import { LessonUpload, CourseModule } from "@/types/course";
+import { useAuth } from "@/context/FastApiAuthContext";
 import { Progress } from "@/components/ui/progress";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
@@ -21,9 +24,11 @@ const CourseEditor = () => {
   const navigate = useNavigate();
   const [course, setCourse] = useState<CourseFormValues | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [invalidId, setInvalidId] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const { user } = useAuth();
   const { toast } = useToast();
+  const { uploadCourseImage } = useCourseImageUpload(user);
   const [moduleExpanded, setModuleExpanded] = useState<Record<string, boolean>>({});
   const [uploadingVideo, setUploadingVideo] = useState<Record<string, boolean>>({});
   const [uploadStatuses, setUploadStatuses] = useState<Record<string, { 
@@ -45,19 +50,26 @@ const CourseEditor = () => {
     mode: "onChange"
   });
 
+  // Validate UUID helper
+  const isValidUUID = (str?: string): boolean => {
+    if (!str) return false;
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(str);
+  };
+
   // Simple mock function for video uploads since we don't have actual implementation
   const uploadVideo = async (
     file: File,
     moduleId: string,
-    lectureId: string,
-    onSuccess: (lectureId: string, url: string, duration: string) => void,
-    onError?: (lectureId: string, error: Error) => void
+    lessonId: string,
+    onSuccess: (lessonId: string, url: string, duration: string) => void,
+    onError?: (lessonId: string, error: Error) => void
   ) => {
     try {
       // Set upload status
       setUploadStatuses(prev => ({
         ...prev,
-        [lectureId]: { isUploading: true, progress: 0 }
+        [lessonId]: { isUploading: true, progress: 0 }
       }));
       
       // Mock upload progress updates
@@ -66,33 +78,33 @@ const CourseEditor = () => {
         progress += 10;
         setUploadStatuses(prev => ({
           ...prev,
-          [lectureId]: { 
-            ...prev[lectureId],
+          [lessonId]: { 
+            ...prev[lessonId],
             progress: progress 
           }
         }));
         
         if (progress >= 100) {
           clearInterval(interval);
-          const mockUrl = `https://example.com/videos/${lectureId}.mp4`;
+          const mockUrl = `https://example.com/videos/${lessonId}.mp4`;
           const mockDuration = "120"; // 2 minutes in seconds
           
           setUploadStatuses(prev => ({
             ...prev,
-            [lectureId]: { 
+            [lessonId]: { 
               isUploading: false,
               progress: 100
             }
           }));
           
-          onSuccess(lectureId, mockUrl, mockDuration);
+          onSuccess(lessonId, mockUrl, mockDuration);
         }
       }, 500);
     } catch (error) {
       console.error("Error uploading video:", error);
       setUploadStatuses(prev => ({
         ...prev,
-        [lectureId]: { 
+        [lessonId]: { 
           isUploading: false,
           progress: 0,
           error: (error as Error).message
@@ -100,7 +112,7 @@ const CourseEditor = () => {
       }));
       
       if (onError) {
-        onError(lectureId, error as Error);
+        onError(lessonId, error as Error);
       }
     }
   };
@@ -120,11 +132,7 @@ const CourseEditor = () => {
 
       try {
         setIsLoading(true);
-        const { data, error } = await supabase
-          .from('courses')
-          .select('*')
-          .eq('id', courseId)
-          .single();
+        const { data, error } = await apiClient.getCourse(courseId);
 
         if (error) {
           console.error("Error fetching course:", error);
@@ -145,8 +153,55 @@ const CourseEditor = () => {
             level: (data.level as "beginner" | "intermediate" | "advanced" | "expert") || "beginner",
             imagePreview: data.image_url || "",
             longDescription: data.long_description || "",
-            modules: [] // Modules will be handled separately
+            modules: [] // Placeholder; populated below
           });
+
+          // Load modules and lessons for this course and populate the form
+          try {
+            const modulesResp = await apiClient.getCourseModules(courseId);
+            const modulesData = modulesResp.data || [];
+
+            const assembledModules: CourseModule[] = [];
+            for (const m of modulesData) {
+              // Fetch lessons for each module
+              const lessonsResp = await apiClient.getModuleLessons(m.id);
+              const lessonsData = lessonsResp.data || [];
+
+              const mappedLessons: LessonUpload[] = (lessonsData || []).map((l: any) => ({
+                id: l.id,
+                title: l.title || "",
+                description: l.description || "",
+                contentType: (l.content_type || "video") as any,
+                videoUrl: l.video_url || null,
+                pdfUrl: l.pdf_url || null,
+                slidesUrl: l.slides_url || null,
+                audioUrl: l.audio_url || null,
+                documentUrl: l.document_url || null,
+                interactiveUrl: l.interactive_url || null,
+                downloadableUrl: l.downloadable_url || null,
+                duration: l.duration || 0,
+                notes: l.notes || "",
+                resources: []
+              }));
+
+              assembledModules.push({
+                id: m.id,
+                title: m.title || "",
+                description: m.description || "",
+                lessons: mappedLessons
+              });
+            }
+
+            form.setValue('modules', assembledModules);
+
+            // Expand the first module for visibility
+            if (assembledModules.length > 0) {
+              setModuleExpanded(prev => ({ ...prev, [assembledModules[0].id]: true }));
+            }
+          } catch (modErr) {
+            console.warn('Failed to load modules/lessons for course editor:', modErr);
+          }
+
           setCourse(data as unknown as CourseFormValues);
         } else {
           toast({
@@ -183,31 +238,9 @@ const CourseEditor = () => {
 
     try {
       setUploadProgress(0);
-      const fileName = `course-image-${courseId}-${Date.now()}`;
-      const { data, error } = await supabase.storage
-        .from('course-images')
-        .upload(fileName, file, {
-          cacheControl: '3600',
-          upsert: false
-        });
-
-      if (error) {
-        console.error("Error uploading image:", error);
-        toast({
-          title: "Image Upload Failed",
-          description: "Failed to upload image. Please try again.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Get public URL
-      const { data: imageData } = supabase.storage
-        .from('course-images')
-        .getPublicUrl(data.path);
-
-      if (imageData && imageData.publicUrl) {
-        form.setValue("imagePreview", imageData.publicUrl);
+      const imageUrl = await uploadCourseImage(file);
+      if (imageUrl) {
+        form.setValue("imagePreview", imageUrl);
         toast({
           title: "Image Uploaded",
           description: "Course image uploaded successfully.",
@@ -224,7 +257,7 @@ const CourseEditor = () => {
     }
   };
 
-  // Handle form submission
+  // Handle form submission: persist course, modules, and lessons (including URLs)
   const onSubmit = async (values: CourseFormValues) => {
     if (!courseId) {
       toast({
@@ -237,14 +270,18 @@ const CourseEditor = () => {
 
     try {
       setIsLoading(true);
-      const { error } = await supabase
-        .from('courses')
-        .update({
-          ...values,
-          image_url: values.imagePreview,
-          author_id: user?.id
-        })
-        .eq('id', courseId);
+      // Normalize frontend-generated IDs like "lesson-<uuid>" or "module-<uuid>" to pure UUIDs for backend
+      const normalizeId = (id: string) => (id || '').replace(/^(lesson|module|course)-/, '');
+      const payload = {
+        title: values.title,
+        description: values.description,
+        category: values.category,
+        level: values.level,
+        long_description: values.longDescription,
+        image_url: values.imagePreview,
+      };
+
+      const { error } = await apiClient.updateCourse(courseId, payload);
 
       if (error) {
         console.error("Error updating course:", error);
@@ -254,6 +291,114 @@ const CourseEditor = () => {
           variant: "destructive",
         });
         return;
+      }
+
+      // Persist modules and lessons
+      try {
+        // Load existing modules from backend to compare
+        const { data: existingModules, error: existingModulesError } = await apiClient.getCourseModules(courseId);
+        if (existingModulesError) {
+          throw new Error(`Failed to load existing modules: ${existingModulesError}`);
+        }
+        const existingModuleMap = new Map<string, any>();
+        (existingModules || []).forEach((m: any) => existingModuleMap.set(normalizeId(m.id), m));
+
+        // Delete modules removed in form
+        const formModuleIds = new Set((values.modules || []).map((m: any) => normalizeId(m.id)));
+        for (const m of existingModules || []) {
+          const backendId = normalizeId(m.id);
+          if (!formModuleIds.has(backendId)) {
+            await apiClient.deleteCourseModule(courseId, backendId);
+          }
+        }
+
+        // Upsert modules and their lessons
+        for (let moduleIndex = 0; moduleIndex < (values.modules || []).length; moduleIndex++) {
+          const module = values.modules[moduleIndex];
+          let moduleId = normalizeId(module.id);
+
+          if (existingModuleMap.has(moduleId)) {
+            // Update module
+            const resp = await apiClient.updateCourseModule(courseId, moduleId, {
+              title: module.title || 'Untitled Module',
+              description: module.description || '',
+              sequence_order: moduleIndex,
+            });
+            if (resp.error) throw new Error(`Failed to update module: ${resp.error}`);
+          } else {
+            // Create module
+            const resp = await apiClient.createCourseModule(courseId, {
+              title: module.title || 'Untitled Module',
+              description: module.description || '',
+              sequence_order: moduleIndex,
+            });
+            if (resp.error) throw new Error(`Failed to create module: ${resp.error}`);
+            moduleId = normalizeId(resp.data?.id || moduleId); // Use created ID if available
+            // Persist the new backend module ID locally to prevent duplication on subsequent saves
+            try {
+              values.modules[moduleIndex].id = moduleId;
+            } catch {}
+          }
+
+          // Handle lessons for this module
+          const { data: existingLessons, error: lessonsLoadError } = await apiClient.getModuleLessons(moduleId);
+          if (lessonsLoadError) {
+            console.warn(`Failed to load lessons for module ${moduleId}:`, lessonsLoadError);
+          }
+          const existingLessonMap = new Map<string, any>();
+          (existingLessons || []).forEach((l: any) => existingLessonMap.set(normalizeId(l.id), l));
+
+          const formLessonIds = new Set((module.lessons || []).map((l: any) => normalizeId(l.id)));
+          // Delete lessons removed in form
+          for (const l of existingLessons || []) {
+            const backendLessonId = normalizeId(l.id);
+            if (!formLessonIds.has(backendLessonId)) {
+              await apiClient.deleteLesson(backendLessonId);
+            }
+          }
+
+          // Upsert lessons
+          for (let lessonIndex = 0; lessonIndex < (module.lessons || []).length; lessonIndex++) {
+            const lesson = module.lessons[lessonIndex];
+            const payloadLesson = {
+              title: lesson.title || 'Untitled Lesson',
+              description: lesson.description || '',
+              video_url: lesson.videoUrl || '',
+              pdf_url: lesson.pdfUrl || '',
+              slides_url: lesson.slidesUrl || '',
+              audio_url: lesson.audioUrl || '',
+              document_url: lesson.documentUrl || '',
+              interactive_url: lesson.interactiveUrl || '',
+              downloadable_url: lesson.downloadableUrl || '',
+              duration: lesson.duration || 0,
+              notes: lesson.notes || '',
+              sequence_order: lessonIndex,
+              content_type: lesson.contentType || 'video',
+            };
+
+            const normalizedLessonId = normalizeId(lesson.id);
+            if (existingLessonMap.has(normalizedLessonId)) {
+              const updateResp = await apiClient.updateLesson(normalizedLessonId, payloadLesson);
+              if (updateResp.error) throw new Error(`Failed to update lesson: ${updateResp.error}`);
+            } else {
+              const createResp = await apiClient.createModuleLesson(moduleId, payloadLesson);
+              if (createResp.error) throw new Error(`Failed to create lesson: ${createResp.error}`);
+              // Persist created backend lesson ID locally to prevent duplication
+              try {
+                const createdLessonId = normalizeId(createResp.data?.id || normalizedLessonId);
+                values.modules[moduleIndex].lessons[lessonIndex].id = createdLessonId;
+              } catch {}
+            }
+          }
+        }
+      } catch (persistErr) {
+        console.error('Error persisting modules/lessons:', persistErr);
+        toast({
+          title: 'Content Save Failed',
+          description: persistErr instanceof Error ? persistErr.message : 'Failed to save modules and lessons',
+          variant: 'destructive'
+        });
+        // Continue to navigation without crashing the page
       }
 
       toast({
@@ -283,8 +428,31 @@ const CourseEditor = () => {
     );
   }
 
+  if (invalidId) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="text-center max-w-md">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2 font-nunito">Invalid Course URL</h1>
+          <p className="text-gray-600 mb-4 font-exo2">
+            The course ID in the address bar appears invalid. Please navigate using the Courses page or your dashboard.
+          </p>
+          <div className="flex justify-center gap-3">
+            <Button variant="outline" onClick={() => navigate('/courses')}>Go to Courses</Button>
+            <Button onClick={() => navigate('/dashboard')}>Back to Dashboard</Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto py-10">
+      {/* Temporary debug banner to make state visible while investigating blank screen */}
+      <Alert className="mb-4">
+        <AlertDescription>
+          Editing course: <span className="font-semibold">{course?.title || '(loading or unset)'}</span> · ID: {courseId}
+        </AlertDescription>
+      </Alert>
       <h1 className="text-3xl font-bold mb-4">Edit Course</h1>
       <Separator className="mb-6" />
 

@@ -1,259 +1,189 @@
 
-import { supabase } from '@/integrations/supabase/client';
-import { LectureContentType, CourseFormValues } from '@/types/course';
+import { apiClient } from '@/lib/api-client';
+import { CourseFormValues } from '@/types/course';
 
 // Create a new course
 export const createCourse = async (values: CourseFormValues) => {
   try {
-    console.log("Starting course creation process...");
+    console.log("Starting course creation process with FastAPI...");
     
-    // Get user ID from session
-    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-    if (sessionError) {
-      console.error("Authentication error:", sessionError);
-      throw new Error(`Authentication error: ${sessionError.message}`);
-    }
-    
-    const userId = sessionData.session?.user?.id;
-    if (!userId) {
-      console.error("User not authenticated");
-      throw new Error("User not authenticated");
-    }
-    
-    console.log("User authenticated with ID:", userId);
-    
-    // Check if the required storage buckets exist
-    const { data: buckets, error: bucketsError } = await supabase
-      .storage
-      .listBuckets();
-    
-    if (bucketsError) {
-      console.error("Error checking storage buckets:", bucketsError);
-      throw new Error(`Error accessing storage: ${bucketsError.message}`);
-    }
-    
-    const bucketNames = buckets.map(b => b.name);
-    console.log("Available storage buckets:", bucketNames);
-    
-    const requiredBuckets = ['course-content', 'course-images', 'course-videos'];
-    const missingBuckets = requiredBuckets.filter(name => !bucketNames.includes(name));
-    
-    if (missingBuckets.length > 0) {
-      console.error("Missing required storage buckets:", missingBuckets);
-      throw new Error(`Missing storage buckets: ${missingBuckets.join(', ')}. Please contact an administrator.`);
-    }
-
-    // Upload course image if provided
-    let imageUrl = values.imagePreview;
-    if (values.imageFile && !values.imagePreview?.startsWith('https://')) {
-      console.log("Uploading course image");
+    // Upload image if provided
+    let imageUrl = null;
+    if (values.imageFile) {
+      const formData = new FormData();
+      formData.append('file', values.imageFile);
       
-      try {
-        const fileExt = values.imageFile.name.split('.').pop();
-        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-        const filePath = `${fileName}`;
-        
-        const { error: uploadError } = await supabase.storage
-          .from('course-images')
-          .upload(filePath, values.imageFile);
-        
-        if (uploadError) {
-          console.error("Error uploading course image:", uploadError);
-          throw uploadError;
-        }
-        
-        const { data: publicUrlData } = supabase.storage
-          .from('course-images')
-          .getPublicUrl(filePath);
-        
-        imageUrl = publicUrlData.publicUrl;
-        console.log("Image uploaded successfully:", imageUrl);
-      } catch (imageError) {
-        console.error("Failed to upload image:", imageError);
-        throw new Error(`Image upload failed: ${imageError instanceof Error ? imageError.message : 'Unknown error'}`);
+      const API_BASE_URL = 'http://localhost:8000';
+      const token = localStorage.getItem('auth_token');
+      const imageUploadResponse = await fetch(`${API_BASE_URL}/api/v1/files/upload/course-image`, {
+        method: 'POST',
+        body: formData,
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+      
+      if (!imageUploadResponse.ok) {
+        throw new Error('Failed to upload course image');
       }
-    }
-
-    // Create course record
-    console.log("Creating course record in database");
-    const { data: courseData, error: courseError } = await supabase
-      .from('courses')
-      .insert({
-        title: values.title,
-        description: values.description,
-        long_description: values.longDescription,
-        category: values.category,
-        level: values.level,
-        image_url: imageUrl,
-        author_id: userId,
-        status: 'draft'
-      })
-      .select()
-      .single();
-
-    if (courseError) {
-      console.error("Error creating course record:", courseError);
-      throw new Error(`Error creating course: ${courseError.message}`);
+      
+      const imageData = await imageUploadResponse.json();
+      imageUrl = `${API_BASE_URL}${imageData.file_path}`;
+      console.log("Image uploaded successfully:", imageUrl);
+    } else if (values.imagePreview && values.imagePreview.startsWith('data:')) {
+      // Handle base64 image data if needed
+      console.log("Base64 image detected, will need server-side processing");
+      // For now, we'll skip this and rely on the backend to handle it
     }
     
+    // Create course in FastAPI backend
+    const courseResponse = await apiClient.post('/api/v1/courses/', {
+      title: values.title,
+      description: values.description,
+      long_description: values.longDescription,
+      category: values.category,
+      level: values.level,
+      image_url: imageUrl,
+      status: 'draft'
+    });
+    
+    // apiClient.post returns parsed JSON directly (no { data, error } wrapper)
+    const courseData = courseResponse as any;
+    if (!courseData || !courseData.id) {
+      throw new Error('Failed to create course: no course data returned');
+    }
     console.log("Course record created:", courseData);
-    const courseId = courseData.id;
     
-    // Create modules and lectures if provided
+    // Create modules and lessons if provided
     if (values.modules && values.modules.length > 0) {
-      console.log(`Creating ${values.modules.length} modules for course ${courseId}`);
+      console.log(`Creating ${values.modules.length} modules for course ${courseData.id}`);
       
       for (let moduleIndex = 0; moduleIndex < values.modules.length; moduleIndex++) {
         const module = values.modules[moduleIndex];
         
         // Create module
-        const { data: moduleData, error: moduleError } = await supabase
-          .from('modules')
-          .insert({
-            course_id: courseId,
-            title: module.title,
-            description: module.description || '',
-            sequence_order: moduleIndex
-          })
-          .select()
-          .single();
-          
-        if (moduleError) {
-          console.error(`Error creating module ${moduleIndex}:`, moduleError);
-          throw new Error(`Error creating module: ${moduleError.message}`);
-        }
+        const moduleResponse = await apiClient.post(`/api/v1/courses/${courseData.id}/modules`, {
+          title: module.title,
+          description: module.description || '',
+          sequence_order: moduleIndex
+        });
         
-        console.log(`Created module ${moduleData.id} for course ${courseId}`);
+        // moduleResponse is the module JSON
+        const moduleData = moduleResponse as any;
+        console.log(`Created module ${moduleData.id} for course ${courseData.id}`);
         
-        // Create lectures for this module
-        if (module.lectures && module.lectures.length > 0) {
-          console.log(`Creating ${module.lectures.length} lectures for module ${moduleData.id}`);
+        // Create lessons for this module (use new lessons shape only)
+        const lessons = (module as any).lessons || [];
+        if (lessons && lessons.length > 0) {
+          console.log(`Creating ${lessons.length} lessons for module ${moduleData.id}`);
           
-          for (let lectureIndex = 0; lectureIndex < module.lectures.length; lectureIndex++) {
-            const lecture = module.lectures[lectureIndex];
+          for (let lessonIndex = 0; lessonIndex < lessons.length; lessonIndex++) {
+            const lesson = lessons[lessonIndex];
             
-            // Create lecture
-            const { data: lectureData, error: lectureError } = await supabase
-              .from('lectures')
-              .insert({
-                module_id: moduleData.id,
-                title: lecture.title,
-                description: lecture.description || '',
-                video_url: lecture.videoUrl,
-                pdf_url: lecture.pdfUrl,
-                slides_url: lecture.slidesUrl,
-                audio_url: lecture.audioUrl,
-                document_url: lecture.documentUrl,
-                interactive_url: lecture.interactiveUrl,
-                downloadable_url: lecture.downloadableUrl,
-                content_type: lecture.contentType || 'video',
-                duration_minutes: lecture.duration,
-                sequence_order: lectureIndex
-              })
-              .select();
-              
-            if (lectureError) {
-              console.error(`Error creating lecture ${lectureIndex}:`, lectureError);
-              throw new Error(`Error creating lecture: ${lectureError.message}`);
-            }
+            // Create lesson
+            const lessonResponse = await apiClient.post(`/api/v1/courses/modules/${moduleData.id}/lessons`, {
+              title: lesson.title,
+              description: lesson.description || '',
+              video_url: (lesson as any).videoUrl || lesson.video_url,
+              pdf_url: (lesson as any).pdfUrl || lesson.pdf_url,
+              slides_url: (lesson as any).slidesUrl || lesson.slides_url,
+              audio_url: (lesson as any).audioUrl || lesson.audio_url,
+              document_url: (lesson as any).documentUrl || lesson.document_url,
+              interactive_url: (lesson as any).interactiveUrl || lesson.interactive_url,
+              downloadable_url: (lesson as any).downloadableUrl || (lesson as any).download_url || lesson.downloadable_url,
+              content_type: (lesson as any).contentType || lesson.content_type || 'video',
+              duration: lesson.duration,
+              sequence_order: lessonIndex
+            });
             
-            console.log(`Created lecture ${lectureData[0].id} for module ${moduleData.id}`);
+            console.log(`Created lesson for module ${moduleData.id}`);
           }
         }
       }
     }
     
     console.log("Course creation completed successfully!");
-    return courseData;
+    return { success: true, course: courseData };
   } catch (error) {
     console.error('Error in createCourse:', error);
-    throw error;
+    return { success: false, error: (error as Error)?.message || 'Unknown error' };
   }
 };
 
-// Upload content file to storage
-export const uploadContentFile = async (
-  file: File,
-  courseId: string,
-  moduleId: string,
-  lectureId: string,
-  contentType: LectureContentType
-): Promise<string> => {
+// Get all courses
+export const getAllCourses = async () => {
   try {
-    console.log(`Uploading ${contentType} file for lecture ${lectureId}...`);
-    
-    // Generate a unique file path
-    const timestamp = Date.now();
-    const fileExtension = file.name.split('.').pop();
-    const fileName = `${timestamp}-${lectureId}.${fileExtension}`;
-    const filePath = `courses/${moduleId}/${contentType}/${fileName}`;
-
-    // Upload the file to storage
-    const { data, error } = await supabase.storage
-      .from('course-content')
-      .upload(filePath, file, {
-        cacheControl: '3600',
-        upsert: true,
-        contentType: file.type,
-      });
-
-    if (error) {
-      console.error(`Error uploading ${contentType} file:`, error);
-      throw new Error(`Error uploading ${contentType}: ${error.message}`);
-    }
-
-    // Get the public URL for the file
-    const { data: urlData } = supabase.storage
-      .from('course-content')
-      .getPublicUrl(filePath);
-    
-    console.log(`${contentType} file uploaded successfully:`, urlData.publicUrl);
-    return urlData.publicUrl;
+    const response = await apiClient.get('/api/v1/courses/');
+    return response.data;
   } catch (error) {
-    console.error('Error in uploadContentFile:', error);
+    console.error('Error in getAllCourses:', error);
     throw error;
   }
 };
 
-// Other course-related actions
+// Get course by ID
 export const getCourseById = async (courseId: string) => {
   try {
-    const { data, error } = await supabase
-      .from('courses')
-      .select(`
-        *,
-        modules (
-          id,
-          title,
-          description,
-          sequence_order,
-          lectures (
-            id,
-            title,
-            description,
-            video_url,
-            pdf_url,
-            slides_url,
-            audio_url,
-            document_url,
-            interactive_url,
-            downloadable_url,
-            content_type,
-            duration,
-            sequence_order
-          )
-        )
-      `)
-      .eq('id', courseId)
-      .single();
-
-    if (error) {
-      throw new Error(`Error fetching course: ${error.message}`);
-    }
-
-    return data;
+    const response = await apiClient.get(`/api/v1/courses/${courseId}`);
+    return response.data;
   } catch (error) {
     console.error('Error in getCourseById:', error);
+    throw error;
+  }
+};
+
+// Update course
+export const updateCourse = async (courseId: string, values: Partial<CourseFormValues>) => {
+  try {
+    // Handle image upload if there's a new image
+    let imageUrl = undefined;
+    if (values.imageFile) {
+      const formData = new FormData();
+      formData.append('file', values.imageFile);
+      
+      const API_BASE_URL = 'http://localhost:8000';
+      const token = localStorage.getItem('auth_token');
+      const imageUploadResponse = await fetch(`${API_BASE_URL}/api/v1/files/upload/course-image`, {
+        method: 'POST',
+        body: formData,
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+      
+      if (!imageUploadResponse.ok) {
+        throw new Error('Failed to upload course image');
+      }
+      
+      const imageData = await imageUploadResponse.json();
+      imageUrl = `${API_BASE_URL}${imageData.file_path}`;
+    }
+    
+    // Update course data
+    const updateData: any = {
+      title: values.title,
+      description: values.description,
+      long_description: values.longDescription,
+      category: values.category,
+      level: values.level
+    };
+    
+    // Only include image_url if we have a new one
+    if (imageUrl) {
+      updateData.image_url = imageUrl;
+    }
+    
+    const response = await apiClient.put(`/api/v1/courses/${courseId}`, updateData);
+    return response.data;
+  } catch (error) {
+    console.error('Error in updateCourse:', error);
+    throw error;
+  }
+};
+
+// Delete course
+export const deleteCourse = async (courseId: string) => {
+  try {
+    await apiClient.delete(`/api/v1/courses/${courseId}`);
+    return true;
+  } catch (error) {
+    console.error('Error in deleteCourse:', error);
     throw error;
   }
 };

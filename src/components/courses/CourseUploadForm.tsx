@@ -120,26 +120,26 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
   const uploadVideo = async (
     file: File,
     moduleId: string,
-    lectureId: string,
-    onSuccess: (lectureId: string, url: string, duration: string) => void,
-    onError?: (lectureId: string, error: Error) => void
+    lessonId: string,
+    onSuccess: (lessonId: string, url: string, duration: string) => void,
+    onError?: (lessonId: string, error: Error) => void
   ) => {
     try {
       // Mock upload process
-      console.log(`Uploading video for lecture ${lectureId} in module ${moduleId}`);
+      console.log(`Uploading video for lesson ${lessonId} in module ${moduleId}`);
       
       // Here we'd normally have actual upload logic
       // For now, just create a mock URL and simulate a delay
       setTimeout(() => {
-        const mockUrl = `https://example.com/videos/${lectureId}.mp4`;
+        const mockUrl = `https://example.com/videos/${lessonId}.mp4`;
         const mockDuration = "120"; // 2 minutes in seconds
         
-        onSuccess(lectureId, mockUrl, mockDuration);
+        onSuccess(lessonId, mockUrl, mockDuration);
       }, 2000);
     } catch (error) {
       console.error("Error uploading video:", error);
       if (onError) {
-        onError(lectureId, error as Error);
+        onError(lessonId, error as Error);
       }
     }
   };

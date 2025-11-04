@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Navigate } from "react-router-dom";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/context/FastApiAuthContext";
 import Navigation from "@/components/Navigation";
 import ProfileSidebar from "@/components/profile/ProfileSidebar";
 import OverviewSection from "@/components/profile/OverviewSection";

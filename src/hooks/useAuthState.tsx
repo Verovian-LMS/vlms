@@ -1,7 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { Session, User } from '@supabase/supabase-js';
-import { supabase } from "@/integrations/supabase/client";
+import { apiMe, getAccessToken } from "@/integrations/api/client";
 
 // Define the user profile type
 export type ProfileType = {
@@ -15,77 +14,48 @@ export type ProfileType = {
 };
 
 export const useAuthState = () => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<{ id: string; email: string | null } | null>(null);
   const [profile, setProfile] = useState<ProfileType | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
+  const [session, setSession] = useState<{ accessToken: string } | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Fetch user profile from the database
-  const fetchProfile = async (userId: string) => {
+  // Fetch user profile from the backend
+  const fetchProfile = async () => {
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (error) {
-        console.error('Error fetching profile:', error);
-        return null;
-      }
-      
-      return data as ProfileType;
+      const data = await apiMe();
+      return data as unknown as ProfileType;
     } catch (error) {
       console.error('Error in fetchProfile:', error);
       return null;
     }
   };
 
-  // Initialize auth state
+  // Initialize auth state from stored token
   useEffect(() => {
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, currentSession) => {
-        setSession(currentSession);
-        setUser(currentSession?.user ?? null);
-        setIsAuthenticated(!!currentSession);
-        
-        if (currentSession?.user) {
-          // Use setTimeout to prevent potential deadlock
-          setTimeout(async () => {
-            const profileData = await fetchProfile(currentSession.user.id);
-            setProfile(profileData);
-          }, 0);
-        } else {
-          setProfile(null);
-        }
+    const token = getAccessToken();
+    if (!token) {
+      setIsAuthenticated(false);
+      setIsLoading(false);
+      setProfile(null);
+      setUser(null);
+      setSession(null);
+      return;
+    }
 
-        if (event === 'SIGNED_OUT') {
-          setProfile(null);
-        }
-      }
-    );
-
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
-      setSession(currentSession);
-      setUser(currentSession?.user ?? null);
-      setIsAuthenticated(!!currentSession);
-      
-      if (currentSession?.user) {
-        fetchProfile(currentSession.user.id).then(profileData => {
-          setProfile(profileData);
-          setIsLoading(false);
-        });
-      } else {
-        setIsLoading(false);
-      }
+    setSession({ accessToken: token });
+    setIsAuthenticated(true);
+    fetchProfile().then(profileData => {
+      setProfile(profileData);
+      setUser(profileData ? { id: profileData.id, email: profileData.email ?? null } : null);
+      setIsLoading(false);
+    }).catch(() => {
+      setIsAuthenticated(false);
+      setIsLoading(false);
+      setProfile(null);
+      setUser(null);
+      setSession(null);
     });
-
-    return () => {
-      subscription.unsubscribe();
-    };
   }, []);
 
   return {

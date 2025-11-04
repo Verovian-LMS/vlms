@@ -2,7 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/context/FastApiAuthContext";
+import { apiClient } from "@/lib/api/client";
 
 // User activity type
 interface UserActivity {
@@ -10,6 +11,7 @@ interface UserActivity {
   type: string;
   name: string;
   created_at: string;
+  details?: Record<string, any>;
   score?: number;
   cards?: number;
 }
@@ -26,9 +28,30 @@ const OverviewSection = () => {
   const { user } = useAuth();
   
   useEffect(() => {
-    // Real implementation would fetch actual user stats
-    // For now, we're using empty data instead of placeholders
-    setUserActivities([]);
+    let isMounted = true;
+    const loadActivity = async () => {
+      try {
+        const res = await apiClient.getRecentActivity();
+        if (!isMounted) return;
+        const items = (res.data || []).map((a: any) => {
+          return {
+            id: a.id,
+            type: a.type,
+            name: a.name,
+            created_at: a.created_at,
+            details: a.details,
+            score: a.details?.score,
+            cards: a.details?.cards,
+          } as UserActivity;
+        });
+        setUserActivities(items);
+      } catch (e) {
+        // swallow for now; UI will show empty state
+        setUserActivities([]);
+      }
+    };
+    loadActivity();
+    return () => { isMounted = false; };
   }, [user]);
   
   return (

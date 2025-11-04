@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import { GraduationCap } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/context/FastApiAuthContext";
 import SignupForm from "@/components/auth/SignupForm";
 import SocialSignup from "@/components/auth/SocialSignup";
 
@@ -23,7 +23,7 @@ const Signup = () => {
     <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
       <Link to="/" className="flex items-center space-x-2 mb-8">
         <GraduationCap className="w-10 h-10 text-medblue-600" />
-        <span className="text-2xl font-bold text-medblue-900">MedMaster</span>
+        <span className="text-2xl font-bold text-medblue-900">Verovian LMS</span>
       </Link>
       
       <motion.div

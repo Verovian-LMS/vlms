@@ -1,0 +1,56 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-added-large-files
+
+  - repo: local
+    hooks:
+      - id: eslint
+        name: ESLint
+        entry: npx eslint
+        language: node
+        files: \.(js|jsx|ts|tsx)$
+        args: [--fix]
+
+      - id: prettier
+        name: Prettier
+        entry: npx prettier
+        language: node
+        files: \.(js|jsx|ts|tsx|json|css|md)$
+        args: [--write]
+
+      - id: typescript-check
+        name: TypeScript Check
+        entry: npx tsc
+        language: node
+        files: \.(ts|tsx)$
+        args: [--noEmit]
+
+      - id: testsprite-critical-tests
+        name: TestSprite Critical Tests
+        entry: node
+        language: node
+        files: \.(js|jsx|ts|tsx)$
+        args: [run-testsprite-critical.js]
+        pass_filenames: false
+        always_run: true
+
+  - repo: https://github.com/psf/black
+    rev: 23.3.0
+    hooks:
+      - id: black
+        language_version: python3
+        files: ^backend/
+
+  - repo: https://github.com/pycqa/flake8
+    rev: 6.0.0
+    hooks:
+      - id: flake8
+        files: ^backend/
+        args: [--max-line-length=88, --extend-ignore=E203,W503]

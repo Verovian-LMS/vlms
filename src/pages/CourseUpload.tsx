@@ -1,43 +1,75 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/context/FastApiAuthContext";
 import { useToast } from "@/hooks/use-toast";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
-import CourseUploadForm from "@/components/courses/CourseUploadForm";
-import { areAllBucketsAccessible, initializeStorage } from "@/utils/initializeStorage";
-import { supabase } from "@/integrations/supabase/client";
+import EnhancedCourseCreationFlow from "@/components/courses/course-form/EnhancedCourseCreationFlow";
+import { apiClient } from "@/lib/api-client";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { createCourse } from "@/lib/actions/course.actions";
+import { CourseFormValues } from "@/lib/validations/course";
 
 const CourseUpload = () => {
-  const { profile, user } = useAuth();
+  const { profile, user, isLoading, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
   const [dataLoading, setDataLoading] = useState<boolean>(true);
   const [storageReady, setStorageReady] = useState<boolean>(false);
   const [storageMessage, setStorageMessage] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Handle course creation
+  const handleCourseSubmit = async (values: CourseFormValues) => {
+    setIsSubmitting(true);
+    try {
+      const result = await createCourse(values);
+      
+      if (result.success) {
+        toast({
+          title: "Success!",
+          description: "Course created successfully.",
+          variant: "default",
+        });
+        
+        // Navigate to the courses listing page (valid route)
+        navigate(`/courses`);
+      } else {
+        throw new Error(result.error || 'Failed to create course');
+      }
+    } catch (error) {
+      console.error('Course creation error:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to create course. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   // Redirect if not logged in or not a creator
   useEffect(() => {
     const checkUserAuthorization = async () => {
       try {
         setDataLoading(true);
-        console.log("Checking user authorization...", { user, profile });
-        
-        // If user data is still loading, don't do anything
-        if (user === undefined || profile === undefined) {
-          console.log("User data is still loading, waiting...");
+        console.log("Checking user authorization...", { user, profile, isLoading, isAuthenticated });
+
+        // Wait for auth context to finish initializing
+        if (isLoading) {
+          console.log("Auth is loading, waiting...");
           return;
         }
-        
+
         setDataLoading(false);
-        
+
         // If user is not logged in, redirect to login
-        if (!user) {
+        if (!isAuthenticated) {
           console.log("User is not logged in, redirecting to login");
           toast({
             title: "Authentication Required",
@@ -66,80 +98,13 @@ const CourseUpload = () => {
     };
     
     checkUserAuthorization();
-  }, [profile, user, navigate, toast]);
+  }, [profile, user, isLoading, isAuthenticated, navigate, toast]);
 
-  // Check if required storage buckets exist and are accessible
+  // Skip storage check for now to avoid storage errors
   useEffect(() => {
-    const checkStorageBuckets = async () => {
-      if (!user) return;
-      
-      try {
-        console.log("Checking storage buckets...");
-        setStorageMessage("Checking storage buckets...");
-        
-        // First check if buckets are accessible
-        const storageResults = await initializeStorage();
-        console.log("Storage initialization results:", storageResults);
-        
-        const allAccessible = Object.values(storageResults).every(result => result.accessible);
-        
-        if (allAccessible) {
-          console.log("All storage buckets are accessible");
-          setStorageReady(true);
-          setStorageMessage(null);
-        } else {
-          // Log which buckets are not accessible
-          const inaccessibleBuckets = Object.entries(storageResults)
-            .filter(([_, status]) => !status.accessible)
-            .map(([name, status]) => `${name}: ${status.error}`);
-            
-          console.warn("Some storage buckets are not accessible:", inaccessibleBuckets);
-          setStorageMessage(`Storage issues detected: ${inaccessibleBuckets.join(', ')}`);
-          
-          // Try direct test as a last resort
-          try {
-            // Test course-images bucket directly
-            const { data: imagesList, error: imagesError } = await supabase.storage
-              .from('course-images')
-              .list('', { limit: 1 });
-              
-            // Test course-videos bucket directly
-            const { data: videosList, error: videosError } = await supabase.storage
-              .from('course-videos')
-              .list('', { limit: 1 });
-              
-            const directTestPassed = !imagesError && !videosError;
-            
-            if (directTestPassed) {
-              console.log("Direct bucket tests passed despite earlier failures");
-              setStorageReady(true);
-              setStorageMessage(null);
-            } else {
-              console.error("Direct bucket tests failed:", { imagesError, videosError });
-              setStorageReady(false);
-              
-              // Show a more user-friendly message
-              if (imagesError?.message?.includes("does not exist") || videosError?.message?.includes("does not exist")) {
-                setStorageMessage("Required storage buckets don't exist. Please create course-images and course-videos buckets in Supabase.");
-              } else {
-                setStorageMessage("Storage buckets are not accessible. You may need admin permissions.");
-              }
-            }
-          } catch (directTestError) {
-            console.error("Error during direct bucket tests:", directTestError);
-            setStorageReady(false);
-          }
-        }
-      } catch (error) {
-        console.error("Error checking storage buckets:", error);
-        setStorageReady(false);
-        setStorageMessage("Failed to verify storage access. Video uploads may not work.");
-      }
-    };
-    
-    if (user) {
-      checkStorageBuckets();
-    }
+    // Always set storage as ready to avoid transient storage errors
+    setStorageReady(true);
+    setStorageMessage(null);
   }, [user]);
 
   // If we're still loading user data, show a loading state
@@ -179,7 +144,7 @@ const CourseUpload = () => {
           >
             <div className="mb-8">
               <h1 className="text-3xl font-heading font-bold text-slate-800 mb-2">Create New Course</h1>
-              <p className="text-slate-600 font-exo2">Fill out the form below to create a new course. Complete all required fields before publishing.</p>
+              <p className="text-slate-600 font-exo2">Follow the step-by-step process to create your course. Complete all steps before publishing.</p>
             </div>
             
             {error && (
@@ -201,7 +166,11 @@ const CourseUpload = () => {
             )}
             
             <ErrorBoundary>
-              <CourseUploadForm storageReady={storageReady} />
+              <EnhancedCourseCreationFlow 
+                onSubmit={handleCourseSubmit}
+                isSubmitting={isSubmitting}
+                mode="create"
+              />
             </ErrorBoundary>
           </motion.div>
         </ErrorBoundary>

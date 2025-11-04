@@ -8,8 +8,8 @@ import Footer from '@/components/Footer';
 import Quiz from '@/components/quiz/Quiz';
 import { Button } from '@/components/ui/button';
 import { Loader2, ArrowLeft } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/context/AuthContext';
+// Using local/sample data until FastAPI quiz endpoints exist
+import { useAuth } from '@/context/FastApiAuthContext';
 import type { QuizQuestion } from '@/components/quiz/Quiz';
 
 interface QuizData {
@@ -18,7 +18,7 @@ interface QuizData {
   description: string;
   questions: QuizQuestion[];
   course_id: string;
-  lecture_id?: string;
+  lesson_id?: string;
   created_at: string;
 }
 
@@ -41,80 +41,66 @@ const QuizPage: React.FC = () => {
       }
 
       try {
-        // This is a placeholder for the actual API call
-        // In a real implementation, you would fetch from your database
-        const { data, error } = await supabase
-          .from('quizzes')
-          .select('*')
-          .eq('id', quizId)
-          .single();
-
-        if (error) throw error;
-        
-        if (!data) {
-          setError("Quiz not found");
+        // Try localStorage first
+        const raw = localStorage.getItem(`quiz:${quizId}`);
+        if (raw) {
+          try {
+            const parsed = JSON.parse(raw);
+            setQuiz(parsed);
+          } catch {
+            setError("Invalid local quiz data");
+          }
         } else {
-          // Parse the questions from JSON if stored as string
-          const parsedData = {
-            ...data,
-            questions: typeof data.questions === 'string' 
-              ? JSON.parse(data.questions) 
-              : data.questions
-          };
-          
-          setQuiz(parsedData);
+          // Fallback sample quiz
+          setQuiz({
+            id: quizId,
+            title: "Introduction to Natural Sciences",
+            description: "Test your knowledge of basic scientific concepts.",
+            questions: [
+              {
+                id: "q1",
+                questionText: "Which of the following is NOT a part of the central nervous system?",
+                options: [
+                  "Brain",
+                  "Spinal cord", 
+                  "Peripheral nerves",
+                  "Cerebrospinal fluid"
+                ],
+                correctOptionIndex: 2,
+                explanation: "The peripheral nerves are part of the peripheral nervous system, not the central nervous system."
+              },
+              {
+                id: "q2",
+                questionText: "What is the largest organ in the human body?",
+                options: [
+                  "Brain",
+                  "Liver", 
+                  "Skin",
+                  "Lungs"
+                ],
+                correctOptionIndex: 2,
+                explanation: "The skin is the largest organ, covering the entire body and serving multiple important functions."
+              },
+              {
+                id: "q3",
+                questionText: "Which chamber of the heart pumps blood to the lungs?",
+                options: [
+                  "Left atrium",
+                  "Left ventricle", 
+                  "Right atrium",
+                  "Right ventricle"
+                ],
+                correctOptionIndex: 3,
+                explanation: "The right ventricle pumps deoxygenated blood to the lungs via the pulmonary artery."
+              }
+            ],
+            course_id: "sample-course-1",
+            created_at: new Date().toISOString()
+          });
         }
       } catch (err) {
         console.error('Error fetching quiz:', err);
         setError("Failed to load quiz data");
-        
-        // For demo purposes, let's provide sample data
-        // Remove this in production
-        setQuiz({
-          id: "sample-quiz-1",
-          title: "Introduction to Medical Anatomy",
-          description: "Test your knowledge of basic human anatomy.",
-          questions: [
-            {
-              id: "q1",
-              questionText: "Which of the following is NOT a part of the central nervous system?",
-              options: [
-                "Brain",
-                "Spinal cord", 
-                "Peripheral nerves",
-                "Cerebrospinal fluid"
-              ],
-              correctOptionIndex: 2,
-              explanation: "The peripheral nerves are part of the peripheral nervous system, not the central nervous system."
-            },
-            {
-              id: "q2",
-              questionText: "What is the largest organ in the human body?",
-              options: [
-                "Brain",
-                "Liver", 
-                "Skin",
-                "Lungs"
-              ],
-              correctOptionIndex: 2,
-              explanation: "The skin is the largest organ, covering the entire body and serving multiple important functions."
-            },
-            {
-              id: "q3",
-              questionText: "Which chamber of the heart pumps blood to the lungs?",
-              options: [
-                "Left atrium",
-                "Left ventricle", 
-                "Right atrium",
-                "Right ventricle"
-              ],
-              correctOptionIndex: 3,
-              explanation: "The right ventricle pumps deoxygenated blood to the lungs via the pulmonary artery."
-            }
-          ],
-          course_id: "sample-course-1",
-          created_at: new Date().toISOString()
-        });
       } finally {
         setLoading(false);
       }
@@ -127,19 +113,18 @@ const QuizPage: React.FC = () => {
     if (!user || !quiz) return;
     
     try {
-      // Save the quiz result
-      // This is a placeholder for the actual API call
-      /*
-      await supabase.from('quiz_results').insert({
+      // Save the quiz result locally for now
+      const record = {
         user_id: user.id,
         quiz_id: quiz.id,
         score,
         total,
         percentage: (score / total) * 100,
-        passed: (score / total) >= 0.7, // 70% passing threshold
+        passed: (score / total) >= 0.7,
         completed_at: new Date().toISOString()
-      });
-      */
+      };
+      const key = `quizResult:${user.id}:${quiz.id}`;
+      localStorage.setItem(key, JSON.stringify(record));
       
       toast({
         title: "Quiz Completed",

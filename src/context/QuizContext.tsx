@@ -1,8 +1,8 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from './AuthContext';
+// Using local storage stubs until FastAPI quiz endpoints exist
+import { useAuth } from './FastApiAuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { QuizQuestion } from '@/components/quiz/Quiz';
 
@@ -30,7 +30,7 @@ interface Quiz {
   time_limit_minutes: number | null;
   passing_score: number | null;
   max_attempts: number;
-  lecture_id: string | null;
+  lesson_id: string | null;
   course_id: string | null;
   questions: QuizQuestion[];
 }
@@ -48,10 +48,16 @@ interface QuizAttempt {
 
 const QuizContext = createContext<QuizContextType | undefined>(undefined);
 
-export function QuizProvider({ children }: { children: React.ReactNode }) {
+interface QuizProviderProps {
+  children: React.ReactNode;
+  quizIdProp?: string | null;
+  lessonIdProp?: string | null;
+}
+
+export function QuizProvider({ children, quizIdProp = null, lessonIdProp = null }: QuizProviderProps) {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { quizId, lectureId } = useParams<{ quizId: string; lectureId: string }>();
+  const { quizId, lessonId } = useParams<{ quizId: string; lessonId: string }>();
   
   const [currentQuiz, setCurrentQuiz] = useState<Quiz | null>(null);
   const [currentAttempt, setCurrentAttempt] = useState<QuizAttempt | null>(null);
@@ -61,12 +67,14 @@ export function QuizProvider({ children }: { children: React.ReactNode }) {
 
   // Fetch quiz data when component mounts
   useEffect(() => {
-    if (quizId) {
-      fetchQuizData(quizId);
-    } else if (lectureId) {
-      fetchQuizByLectureId(lectureId);
+    const resolvedQuizId = quizIdProp || quizId || null;
+    const resolvedLessonId = lessonIdProp || lessonId || null;
+    if (resolvedQuizId) {
+      fetchQuizData(resolvedQuizId);
+    } else if (resolvedLessonId) {
+      fetchQuizByLessonId(resolvedLessonId);
     }
-  }, [quizId, lectureId]);
+  }, [quizIdProp, lessonIdProp, quizId, lessonId]);
 
   // Timer effect for timed quizzes
   useEffect(() => {
@@ -100,92 +108,53 @@ export function QuizProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(true);
       setError(null);
       
-      // Fetch quiz details
-      const { data: quizData, error: quizError } = await supabase
-        .from('quizzes')
-        .select('*')
-        .eq('id', id)
-        .single();
-      
-      if (quizError) throw quizError;
-      
-      // Fetch quiz questions
-      const { data: questionsData, error: questionsError } = await supabase
-        .from('questions')
-        .select('*')
-        .eq('quiz_id', id)
-        .order('sequence_order', { ascending: true });
-      
-      if (questionsError) throw questionsError;
-      
-      // For each question, fetch its answers
-      const questionsWithOptions = await Promise.all(
-        questionsData.map(async (question) => {
-          const { data: answersData, error: answersError } = await supabase
-            .from('answers')
-            .select('*')
-            .eq('questions_id', question.id)
-            .order('sequence_order', { ascending: true });
-          
-          if (answersError) throw answersError;
-          
-          // Transform to match QuizQuestion interface
-          const correctOptionIndex = answersData.findIndex(answer => answer.is_correct);
-          
-          return {
-            id: question.id,
-            questionText: question.question_text,
-            options: answersData.map(answer => answer.answer_text),
-            correctOptionIndex: correctOptionIndex >= 0 ? correctOptionIndex : 0,
-            explanation: question.explanation || ""
-          };
-        })
-      );
-      
-      setCurrentQuiz({
-        ...quizData,
-        questions: questionsWithOptions
-      });
-      
-      // Check if user has an in-progress attempt
+      // Load quiz from localStorage or use sample
+      const localQuizRaw = localStorage.getItem(`quiz:${id}`);
+      let localQuiz: any | null = null;
+      if (localQuizRaw) {
+        try { localQuiz = JSON.parse(localQuizRaw); } catch {}
+      }
+
+      if (!localQuiz) {
+        // Fallback sample quiz
+        localQuiz = {
+          id,
+          title: "Sample Quiz",
+          description: "Quick knowledge check.",
+          time_limit_minutes: 10,
+          passing_score: 70,
+          max_attempts: 3,
+          lesson_id: null,
+          course_id: null,
+          questions: [
+            {
+              id: "q1",
+              questionText: "What is 2 + 2?",
+              options: ["3", "4", "5", "6"],
+              correctOptionIndex: 1,
+              explanation: "Basic arithmetic: 2 + 2 = 4."
+            },
+            {
+              id: "q2",
+              questionText: "Which is a mammal?",
+              options: ["Shark", "Eagle", "Dolphin", "Lizard"],
+              correctOptionIndex: 2,
+              explanation: "Dolphins are mammals."
+            }
+          ] as QuizQuestion[]
+        };
+      }
+
+      setCurrentQuiz(localQuiz);
+
+      // Load in-progress attempt from localStorage
       if (user) {
-        const { data: attemptData, error: attemptError } = await supabase
-          .from('quizAttempts')
-          .select('*')
-          .eq('quiz_id', id)
-          .eq('user_id', user.id)
-          .eq('status', 'in_progress')
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .single();
-        
-        if (!attemptError && attemptData) {
-          // Get saved responses for this attempt
-          const { data: responsesData } = await supabase
-            .from('quizResponses')
-            .select('*')
-            .eq('attempt_id', attemptData.id);
-          
-          // Convert responses to answer map
-          const answers: Record<string, number> = {};
-          if (responsesData) {
-            responsesData.forEach(response => {
-              const question = questionsWithOptions.find(q => q.id === response.question_id);
-              if (question) {
-                const answerIndex = question.options.findIndex(
-                  opt => opt === response.response_text
-                );
-                if (answerIndex >= 0) {
-                  answers[response.question_id] = answerIndex;
-                }
-              }
-            });
-          }
-          
-          setCurrentAttempt({
-            ...attemptData,
-            answers
-          });
+        const attemptRaw = localStorage.getItem(`quizAttempt:${user.id}:${id}`);
+        if (attemptRaw) {
+          try {
+            const attempt = JSON.parse(attemptRaw);
+            setCurrentAttempt({ ...attempt });
+          } catch {}
         }
       }
       
@@ -197,32 +166,20 @@ export function QuizProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const fetchQuizByLectureId = async (lectureId: string) => {
+  const fetchQuizByLessonId = async (lessonId: string) => {
     try {
       setIsLoading(true);
       setError(null);
-      
-      // Find quiz associated with this lecture
-      const { data: quizData, error: quizError } = await supabase
-        .from('quizzes')
-        .select('*')
-        .eq('lecture_id', lectureId)
-        .single();
-      
-      if (quizError) {
-        if (quizError.code === 'PGRST116') {
-          setIsLoading(false);
-          return; // No quiz for this lecture, not an error
-        }
-        throw quizError;
+      // Map lesson -> quiz via localStorage (no legacy fallback)
+      const pointer = localStorage.getItem(`quizByLesson:${lessonId}`);
+      if (!pointer) {
+        setIsLoading(false);
+        return;
       }
-      
-      if (quizData) {
-        await fetchQuizData(quizData.id);
-      }
+      await fetchQuizData(pointer);
       
     } catch (err) {
-      console.error("Error fetching quiz for lecture:", err);
+      console.error("Error fetching quiz for lesson:", err);
       setError("Failed to load quiz data. Please try again.");
       setIsLoading(false);
     }
@@ -232,24 +189,19 @@ export function QuizProvider({ children }: { children: React.ReactNode }) {
     if (!user || !currentQuiz) return;
     
     try {
-      // Create a new attempt
-      const { data: attemptData, error: attemptError } = await supabase
-        .from('quizAttempts')
-        .insert({
-          quiz_id: currentQuiz.id,
-          user_id: user.id,
-          started_at: new Date().toISOString(),
-          status: 'in_progress'
-        })
-        .select()
-        .single();
-      
-      if (attemptError) throw attemptError;
-      
-      setCurrentAttempt({
-        ...attemptData,
+      // Create a new local attempt
+      const attemptData = {
+        id: crypto.randomUUID(),
+        quiz_id: currentQuiz.id,
+        user_id: user.id,
+        started_at: new Date().toISOString(),
+        completed_at: null,
+        score: null,
+        status: 'in_progress' as const,
         answers: {}
-      });
+      };
+      setCurrentAttempt(attemptData);
+      localStorage.setItem(`quizAttempt:${user.id}:${currentQuiz.id}`, JSON.stringify(attemptData));
       
       // Start the timer if it's a timed quiz
       if (currentQuiz.time_limit_minutes) {
@@ -278,44 +230,12 @@ export function QuizProvider({ children }: { children: React.ReactNode }) {
         ...currentAttempt,
         answers: { ...answers }
       });
-      
-      // Save each answer to the database
-      for (const [questionId, answerIndex] of Object.entries(answers)) {
-        const question = currentQuiz.questions.find(q => q.id === questionId);
-        if (!question) continue;
-        
-        // Check if response already exists
-        const { data: existingResponse } = await supabase
-          .from('quizResponses')
-          .select('*')
-          .eq('attempt_id', currentAttempt.id)
-          .eq('question_id', questionId)
-          .single();
-        
-        const responseText = question.options[answerIndex];
-        const isCorrect = answerIndex === question.correctOptionIndex;
-        
-        if (existingResponse) {
-          // Update existing response
-          await supabase
-            .from('quizResponses')
-            .update({
-              response_text: responseText,
-              is_correct: isCorrect
-            })
-            .eq('id', existingResponse.id);
-        } else {
-          // Insert new response
-          await supabase
-            .from('quizResponses')
-            .insert({
-              attempt_id: currentAttempt.id,
-              question_id: questionId,
-              response_text: responseText,
-              is_correct: isCorrect
-            });
-        }
-      }
+      // Persist attempt answers locally
+      const updatedAttempt = {
+        ...currentAttempt,
+        answers: { ...answers }
+      };
+      localStorage.setItem(`quizAttempt:${user.id}:${currentQuiz.id}`, JSON.stringify(updatedAttempt));
       
     } catch (err) {
       console.error("Error saving quiz progress:", err);
@@ -347,19 +267,7 @@ export function QuizProvider({ children }: { children: React.ReactNode }) {
       
       const score = totalAnswers > 0 ? (correctAnswers / currentQuiz.questions.length) * 100 : 0;
       
-      // Update the attempt
-      const { error: updateError } = await supabase
-        .from('quizAttempts')
-        .update({
-          completed_at: new Date().toISOString(),
-          score: score,
-          status: 'completed'
-        })
-        .eq('id', currentAttempt.id);
-      
-      if (updateError) throw updateError;
-      
-      // Update local state
+      // Update local attempt
       setCurrentAttempt({
         ...currentAttempt,
         completed_at: new Date().toISOString(),
@@ -367,6 +275,15 @@ export function QuizProvider({ children }: { children: React.ReactNode }) {
         status: 'completed',
         answers: { ...answers }
       });
+      localStorage.setItem(`quizAttempt:${user.id}:${currentQuiz.id}`,
+        JSON.stringify({
+          ...currentAttempt,
+          completed_at: new Date().toISOString(),
+          score,
+          status: 'completed',
+          answers: { ...answers }
+        })
+      );
       
       toast({
         title: "Quiz Submitted",

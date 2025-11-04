@@ -9,6 +9,7 @@ export interface VideoQualityOption {
 interface VideoPlayerHookProps {
   src?: string | null;
   onProgressUpdate?: (currentTime: number, duration: number) => void;
+  updateOnSeek?: boolean;
 }
 
 interface VideoState {
@@ -27,7 +28,7 @@ interface VideoState {
 }
 
 // Making the export compatible with both default and named import styles
-const useVideoPlayerHook = ({ src, onProgressUpdate }: VideoPlayerHookProps) => {
+const useVideoPlayerHook = ({ src, onProgressUpdate, updateOnSeek }: VideoPlayerHookProps) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const [isControlsVisible, setIsControlsVisible] = useState(true);
@@ -126,7 +127,19 @@ const useVideoPlayerHook = ({ src, onProgressUpdate }: VideoPlayerHookProps) => 
       setState(prev => ({ ...prev, playbackRate: videoRef.current?.playbackRate || 1 }));
     };
     const handleSeeking = () => setState(prev => ({ ...prev, seeking: true }));
-    const handleSeeked = () => setState(prev => ({ ...prev, seeking: false }));
+    const handleSeeked = () => {
+      setState(prev => ({ ...prev, seeking: false }));
+      // Optionally record progress on seek, even when paused
+      const video = videoRef.current;
+      if (!video) return;
+      if (updateOnSeek && typeof onProgressUpdate === 'function') {
+        // Only send when paused to honor the "while paused" requirement
+        if (video.paused) {
+          const { currentTime, duration } = video;
+          onProgressUpdate(currentTime, duration);
+        }
+      }
+    };
     const handleEnterPiP = () => setState(prev => ({ ...prev, isPictureInPicture: true }));
     const handleExitPiP = () => setState(prev => ({ ...prev, isPictureInPicture: false }));
     

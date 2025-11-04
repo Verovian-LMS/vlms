@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { GraduationCap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/context/FastApiAuthContext";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -53,7 +53,7 @@ const Login = () => {
       await login(values.email, values.password);
       toast({
         title: "Login successful!",
-        description: "Welcome back to MedMaster."
+        description: "Welcome back to Verovian LMS."
       });
       navigate('/dashboard');
     } catch (error) {
@@ -68,7 +68,7 @@ const Login = () => {
     <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
       <Link to="/" className="flex items-center space-x-2 mb-8">
         <GraduationCap className="w-10 h-10 text-medblue-600" />
-        <span className="text-2xl font-bold text-medblue-900">MedMaster</span>
+        <span className="text-2xl font-bold text-medblue-900">Verovian LMS</span>
       </Link>
       
       <motion.div
@@ -79,7 +79,7 @@ const Login = () => {
       >
         <Card className="border-slate-200 shadow-lg">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">Sign In to MedMaster</CardTitle>
+            <CardTitle className="text-2xl font-bold text-center">Sign In to Verovian LMS</CardTitle>
             <CardDescription className="text-center">
               Enter your details to access your account
             </CardDescription>
