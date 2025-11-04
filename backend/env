@@ -3,7 +3,7 @@
 
 # PostgreSQL connection (active):
 DATABASE_URL=postgresql://postgres:Galvatron101!@localhost:5432/learnify_med_skillz
-SECRET_KEY=your-super-secret-jwt-key-change-in-production
+SECRET_KEY=63e84b2ee462a4672e93cb2b693ab1c53f7d50a6087745699c0ce2d2933903ed
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 UPLOAD_DIR=uploads
