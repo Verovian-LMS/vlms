@@ -18,10 +18,10 @@ depends_on = None
 
 
 def upgrade():
-    # Add document_url TEXT column, nullable
-    op.add_column('lessons', sa.Column('document_url', sa.Text(), nullable=True))
+    # Add document_url TEXT column if it does not already exist (idempotent)
+    op.execute("ALTER TABLE lessons ADD COLUMN IF NOT EXISTS document_url TEXT")
 
 
 def downgrade():
-    # Drop document_url column
-    op.drop_column('lessons', 'document_url')
+    # Drop document_url column if it exists
+    op.execute("ALTER TABLE lessons DROP COLUMN IF EXISTS document_url")
