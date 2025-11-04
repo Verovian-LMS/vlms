@@ -22,8 +22,9 @@ RUN mkdir -p uploads/course-images uploads/course-videos uploads/course-content
 # Expose port
 EXPOSE 8000
 
-# Command to run the application
-CMD ["python", "run.py"]
+# Command to run migrations and start the application
+# Uses $PORT if provided by the hosting platform, defaults to 8000
+CMD ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
 
 
 
