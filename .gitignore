@@ -22,3 +22,17 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+ 
+# Local-only directories and tooling
+.cursor/
+.specify/
+specs/
+testsprite-specs/
+
+# Ignore all Markdown except root README.md
+*.md
+!/README.md
+!/readme.md
+
+# Ignore testsprite scripts
+run-testsprite*.js
